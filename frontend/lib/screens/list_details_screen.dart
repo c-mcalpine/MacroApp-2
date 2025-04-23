@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+class ListDetailsScreen extends StatelessWidget {
+  final String listName;
+  final List<Map<String, dynamic>> recipes;
+
+  const ListDetailsScreen({super.key, required this.listName, required this.recipes});
+
+  @override
+  Widget build(BuildContext context) {
+    List<Map<String, dynamic>> sortedRecipes = List.from(recipes)
+      ..sort((a, b) => a['name'].compareTo(b['name']));
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          listName,
+          style: GoogleFonts.lexend(color: Colors.white, fontSize: 24),
+        ),
+        backgroundColor: Colors.black,
+      ),
+      body: sortedRecipes.isEmpty
+          ? Center(
+              child: Text(
+                "No recipes in this list.",
+                style: GoogleFonts.lexend(color: Colors.white70),
+              ),
+            )
+          : ListView.builder(
+              padding: EdgeInsets.all(16),
+              itemCount: sortedRecipes.length,
+              itemBuilder: (context, index) {
+                var recipe = sortedRecipes[index];
+                return Card(
+                  color: Colors.white10,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(recipe['image_url']),
+                    ),
+                    title: Text(
+                      recipe['name'],
+                      style: GoogleFonts.lexend(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
+                    onTap: () {
+                      // Navigate to recipe details
+                    },
+                  ),
+                );
+              },
+            ),
+      backgroundColor: Colors.black,
+    );
+  }
+}
