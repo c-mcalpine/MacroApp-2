@@ -92,6 +92,84 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     }
   }
 
+  void _createNotesWithIngredients(List<dynamic> ingredients, String recipeName) async {
+    try {
+      // Format ingredients for the note
+      final noteContent = ingredients.map((ingredient) {
+        final amount = ingredient['amount'] ?? '';
+        final unit = ingredient['unit'] ?? '';
+        final name = ingredient['name'] ?? '';
+        return '☐ $amount $unit $name';
+      }).join('\n');
+
+      // Create a URL scheme for Notes app with title
+      final noteTitle = '$recipeName - Grocery List';
+      final notesUrl = 'notes://create?title=${Uri.encodeComponent(noteTitle)}&text=${Uri.encodeComponent(noteContent)}';
+      
+      if (await canLaunch(notesUrl)) {
+        await launch(notesUrl);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not open Notes app')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating note: $e')),
+      );
+    }
+  }
+
+  void _showIngredientsChecklistDialog(BuildContext context, Map<String, dynamic> recipe) {
+    final ingredients = recipe['ingredients'] ?? [];
+    final selectedIngredients = List<bool>.filled(ingredients.length, true);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Select Ingredients for Notes'),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: ingredients.length,
+              itemBuilder: (context, index) {
+                final ingredient = ingredients[index];
+                return CheckboxListTile(
+                  title: Text('${ingredient['amount']} ${ingredient['unit']} ${ingredient['name']}'),
+                  value: selectedIngredients[index],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedIngredients[index] = value ?? false;
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final selectedItems = ingredients.asMap().entries
+                    .where((entry) => selectedIngredients[entry.key])
+                    .map((entry) => entry.value)
+                    .toList();
+                _createNotesWithIngredients(selectedItems, recipe['recipe']['name'] ?? 'Recipe');
+                Navigator.pop(context);
+              },
+              child: Text('Create Note'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -319,21 +397,16 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             ),
                           ),
                         ),
-                        // Notes Placeholder
+                        // Notes Button
                         ElevatedButton.icon(
-                          onPressed: () {
-                            // Placeholder for Notes integration
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Notes feature coming soon!")),
-                            );
-                          },
-                          icon: Icon(Icons.note_add_outlined, color: Colors.white),
+                          onPressed: () => _showIngredientsChecklistDialog(context, recipe),
+                          icon: Icon(Icons.note_add, color: Colors.white),
                           label: Text(
-                            "Notes",
+                            "+ Notes",
                             style: GoogleFonts.lexend(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orangeAccent,
+                            backgroundColor: Color(0xFFFFD700), // iOS Notes app yellow
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),

@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/services/supabase_service.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
+import '../providers/auth_provider.dart';
 
 class AuthService {
   static final String baseUrl = dotenv.env['API_BASE_URL']!;
@@ -14,6 +17,7 @@ class AuthService {
   static const String _devModeKey = 'dev_mode';
   static const String _devPhoneKey = 'dev_phone';
   static const String _devOtpKey = 'dev_otp';
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   // Initialize shared preferences
   static Future<SharedPreferences> get _prefs async => await SharedPreferences.getInstance();
@@ -94,10 +98,7 @@ class AuthService {
           
           if (user == null && username != null) {
             // Create new user in Supabase
-            await SupabaseService.createUser(
-              phoneNumber: phoneNumber,
-              username: username,
-            );
+            await SupabaseService.createUser(phoneNumber, username);
           }
           
           // Save auth data
@@ -106,6 +107,12 @@ class AuthService {
             userId: phoneNumber,
             userName: username ?? 'User',
           );
+          
+          // Update AuthProvider
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            Provider.of<AuthProvider>(context, listen: false).login(phoneNumber, userName: username ?? 'User');
+          }
           
           return {
             'success': true,
@@ -135,10 +142,7 @@ class AuthService {
           
           if (user == null && username != null) {
             // Create new user in Supabase
-            await SupabaseService.createUser(
-              phoneNumber: phoneNumber,
-              username: username,
-            );
+            await SupabaseService.createUser(phoneNumber, username);
           }
           
           // Save auth data
@@ -147,6 +151,15 @@ class AuthService {
             userId: data['user_id'] ?? phoneNumber,
             userName: data['user_name'] ?? username ?? 'User',
           );
+          
+          // Update AuthProvider
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            Provider.of<AuthProvider>(context, listen: false).login(
+              phoneNumber,
+              userName: data['user_name'] ?? username ?? 'User',
+            );
+          }
           
           return {
             'success': true,
@@ -235,10 +248,7 @@ class AuthService {
   static Future<Map<String, dynamic>> updateUsername(String phoneNumber, String newUsername) async {
     try {
       // Update username in Supabase
-      await SupabaseService.updateUsername(
-        phoneNumber: phoneNumber,
-        newUsername: newUsername,
-      );
+      await SupabaseService.updateUsername(phoneNumber, newUsername);
       
       // Update local storage
       final prefs = await _prefs;

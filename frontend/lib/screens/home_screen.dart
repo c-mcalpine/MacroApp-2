@@ -31,43 +31,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadUserData() async {
-    setState(() {
-      isLoading = true;
-    });
-
     try {
       // Get user ID and name
       final userId = await AuthService.getUserId();
       final name = await AuthService.getUserName();
       
-      if (userId != null) {
-        // Load hearted recipes from Supabase
-        final heartedRecipesData = await SupabaseService.getHeartedRecipes(userId);
-        
-        // Load custom lists from Supabase
-        final customListsData = await SupabaseService.getCustomLists(userId);
-        
-        // Convert custom lists to the expected format
-        final Map<String, List<Map<String, dynamic>>> formattedLists = {};
-        for (var list in customListsData) {
-          formattedLists[list['name']] = [];
-        }
-        
-        setState(() {
-          heartedRecipes = heartedRecipesData.map((item) => item['recipes'] as Map<String, dynamic>).toList();
-          customLists = formattedLists;
-          userName = name;
-          isLoading = false;
-        });
-      } else {
+      if (userId == null) {
+        print('No user ID found');
         setState(() {
           isLoading = false;
+          heartedRecipes = [];
+          customLists = {};
+          userName = null;
         });
+        return;
       }
-    } catch (e) {
+
+      // Load hearted recipes from Supabase
+      final heartedRecipesData = await SupabaseService.getHeartedRecipes(userId);
+      
+      // Load custom lists from Supabase
+      final customListsData = await SupabaseService.getCustomLists(userId);
+      
+      // Convert custom lists to the expected format
+      final Map<String, List<Map<String, dynamic>>> formattedLists = {};
+      for (var list in customListsData) {
+        formattedLists[list['name']] = [];
+      }
+      
+      setState(() {
+        heartedRecipes = heartedRecipesData.map((item) => item['recipes'] as Map<String, dynamic>).toList();
+        customLists = formattedLists;
+        userName = name;
+        isLoading = false;
+      });
+    } catch (e, stack) {
       print('Error loading user data: $e');
+      print('Stack trace: $stack');
       setState(() {
         isLoading = false;
+        heartedRecipes = [];
+        customLists = {};
+        userName = null;
       });
     }
   }
@@ -78,48 +83,60 @@ class _HomeScreenState extends State<HomeScreen> {
       return Scaffold(
         backgroundColor: Colors.black,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.deepOrange),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.deepOrange),
+              SizedBox(height: 16),
+              Text(
+                'Loading profile...',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
       );
     }
 
+    final List<Widget> _pages = [
+      ExploreRecipesScreen(onRecipeSelected: (recipeId) {
+        // Handle recipe selection
+      }),
+      SearchScreen(),
+      ProfileScreen(
+        heartedRecipes: heartedRecipes,
+        customLists: customLists,
+        onLogout: widget.onLogout,
+      ),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.black,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          ExploreRecipesScreen(
-            onRecipeSelected: (recipeId) {
-              // Handle recipe selection
-            },
-          ),
-          SearchScreen(
-            onRecipeSelected: (recipeId) {
-              // Handle recipe selection
-            },
-          ),
-          ProfileScreen(
-            heartedRecipes: heartedRecipes,
-            customLists: customLists,
-            onLogout: widget.onLogout,
-          ),
-        ],
-      ),
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.whatshot), label: 'Explore'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepOrange,
-        unselectedItemColor: Colors.white60,
-        backgroundColor: Colors.black,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
+        backgroundColor: Colors.black,
+        selectedItemColor: Colors.deepOrange,
+        unselectedItemColor: Colors.white54,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

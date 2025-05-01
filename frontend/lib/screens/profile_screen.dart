@@ -7,15 +7,15 @@ import '../screens/dev_settings_screen.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 
 class ProfileScreen extends StatefulWidget {
-  final List<Map<String, dynamic>>? heartedRecipes;
-  final Map<String, List<Map<String, dynamic>>>? customLists;
-  final VoidCallback? onLogout;
+  final List<Map<String, dynamic>> heartedRecipes;
+  final Map<String, List<Map<String, dynamic>>> customLists;
+  final VoidCallback onLogout;
 
   const ProfileScreen({
     Key? key, 
-    this.heartedRecipes,
-    this.customLists,
-    this.onLogout,
+    required this.heartedRecipes,
+    required this.customLists,
+    required this.onLogout,
   }) : super(key: key);
 
   @override
@@ -23,190 +23,144 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isLoading = true;
-  Map<String, dynamic>? _userData;
-  List<Map<String, dynamic>> _heartedRecipes = [];
-  List<Map<String, dynamic>> _customLists = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    setState(() => _isLoading = true);
-    try {
-      final phoneNumber = context.read<AuthProvider>().phoneNumber;
-      if (phoneNumber != null) {
-        // Use passed parameters if available, otherwise fetch from Supabase
-        if (widget.heartedRecipes != null) {
-          _heartedRecipes = widget.heartedRecipes!;
-        } else {
-          final heartedRecipes = await SupabaseService.getHeartedRecipes(phoneNumber);
-          _heartedRecipes = heartedRecipes;
-        }
-        
-        if (widget.customLists != null) {
-          // Convert the custom lists to the format expected by the UI
-          _customLists = widget.customLists!.entries.map((entry) {
-            return {
-              'name': entry.key,
-              'items': entry.value,
-            };
-          }).toList();
-        } else {
-          final customLists = await SupabaseService.getCustomLists(phoneNumber);
-          _customLists = customLists;
-        }
-        
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading user data: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _showLogoutConfirmation() async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _createNewList(BuildContext context) async {
+    final TextEditingController listNameController = TextEditingController();
+    
+    return showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
         title: Text(
-          "Logout",
+          'Create New List',
           style: GoogleFonts.lexend(
-            fontWeight: FontWeight.bold,
             color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        content: Text(
-          "Are you sure you want to logout?",
-          style: GoogleFonts.lexend(
-            color: Colors.white70,
+        content: TextField(
+          controller: listNameController,
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: 'Enter list name',
+            hintStyle: TextStyle(color: Colors.white54),
+            filled: true,
+            fillColor: Colors.white12,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(context),
             child: Text(
-              "Cancel",
-              style: GoogleFonts.lexend(
-                color: Colors.white70,
-              ),
+              'Cancel',
+              style: GoogleFonts.lexend(color: Colors.white70),
             ),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepOrange,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
+          TextButton(
+            onPressed: () async {
+              final listName = listNameController.text.trim();
+              if (listName.isEmpty) return;
+              
+              try {
+                final userId = context.read<AuthProvider>().phoneNumber;
+                if (userId == null) return;
+                
+                final newList = await SupabaseService.createCustomList(
+                  userId: userId,
+                  listName: listName,
+                );
+                
+                setState(() {
+                  if (widget.customLists[listName] == null) {
+                    widget.customLists[listName] = [];
+                  }
+                });
+                
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('List "$listName" created successfully')),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Failed to create list: $e')),
+                );
+                Navigator.pop(context);
+              }
+            },
             child: Text(
-              "Logout",
-              style: GoogleFonts.lexend(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+              'Create',
+              style: GoogleFonts.lexend(color: Colors.deepOrange),
             ),
           ),
         ],
       ),
     );
-
-    if (confirmed == true) {
-      if (widget.onLogout != null) {
-        widget.onLogout!();
-      } else {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.logout();
-      }
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.deepOrange),
-          ),
-        ),
-      );
-    }
+    final phoneNumber = context.read<AuthProvider>().phoneNumber;
+    final userName = context.read<AuthProvider>().userName;
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          "Profile",
-          style: GoogleFonts.lexend(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit, color: Colors.white70),
-            onPressed: () {
-              // Navigate to edit profile screen
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () async {
-              await _showLogoutConfirmation();
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body: SafeArea(
+        child: SingleChildScrollView(
           padding: EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile Header
-              Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.deepOrange,
-                      child: Text(
-                        _userData?['username']?.substring(0, 1).toUpperCase() ?? 'U',
-                        style: GoogleFonts.lexend(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.white12,
+                    child: Icon(Icons.person, size: 40, color: Colors.white),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          userName ?? 'User',
+                          style: GoogleFonts.lexend(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
+                        Text(
+                          phoneNumber ?? '',
+                          style: GoogleFonts.lexend(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      _userData?['username'] ?? 'User',
-                      style: GoogleFonts.lexend(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                  ),
+                  if (kDebugMode)
+                    IconButton(
+                      icon: Icon(Icons.settings, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DevSettingsScreen(),
+                          ),
+                        );
+                      },
                     ),
-                  ],
-                ),
+                ],
               ),
-              SizedBox(height: 32),
+              SizedBox(height: 24),
 
               // Stats Section
               Container(
@@ -218,8 +172,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatItem("Hearted", _heartedRecipes.length.toString()),
-                    _buildStatItem("Lists", _customLists.length.toString()),
+                    _buildStatItem("Hearted", widget.heartedRecipes.length.toString()),
+                    _buildStatItem("Lists", widget.customLists.length.toString()),
                     _buildStatItem("Saved", "0"),
                   ],
                 ),
@@ -258,59 +212,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               
               // Settings Section
               SizedBox(height: 24),
-              Text(
-                "Settings",
-                style: GoogleFonts.lexend(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              ListTile(
+                leading: Icon(Icons.logout, color: Colors.white),
+                title: Text(
+                  "Logout",
+                  style: GoogleFonts.lexend(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
                 ),
+                onTap: widget.onLogout,
               ),
-              SizedBox(height: 16),
-              _buildSettingsItem(Icons.notifications, "Notifications"),
-              _buildSettingsItem(Icons.lock, "Privacy"),
-              _buildSettingsItem(Icons.help, "Help & Support"),
-              _buildSettingsItem(Icons.info, "About"),
-              _buildSettingsItem(Icons.logout, "Logout", onTap: _showLogoutConfirmation),
-              
-              // Development Settings (only visible in debug mode)
-              if (kDebugMode) ...[
-                SizedBox(height: 16),
-                _buildSettingsItem(
-                  Icons.developer_mode, 
-                  "Development Settings", 
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DevSettingsScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-              
-              SizedBox(height: 32),
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final phoneNumber = context.read<AuthProvider>().phoneNumber;
-          if (phoneNumber != null) {
-            try {
-              await SupabaseService.createCustomList(
-                userId: phoneNumber,
-                listName: 'New List',
-              );
-              _loadUserData();
-            } catch (e) {
-              print('Error creating custom list: $e');
-            }
-          }
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -326,7 +241,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.white,
           ),
         ),
-        SizedBox(height: 4),
         Text(
           label,
           style: GoogleFonts.lexend(
@@ -338,37 +252,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, {VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap ?? () {},
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        margin: EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(
-          color: Colors.white12,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.white70, size: 24),
-            SizedBox(width: 16),
-            Text(
-              title,
-              style: GoogleFonts.lexend(
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
-            Spacer(),
-            Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildHeartedRecipesTab() {
-    return _heartedRecipes.isEmpty
+    return widget.heartedRecipes.isEmpty
         ? Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -404,9 +289,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
-            itemCount: _heartedRecipes.length,
+            itemCount: widget.heartedRecipes.length,
             itemBuilder: (context, index) {
-              var recipe = _heartedRecipes[index];
+              var recipe = widget.heartedRecipes[index];
               return GestureDetector(
                 onTap: () {
                   // Navigate to recipe details
@@ -415,7 +300,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     image: DecorationImage(
-                      image: NetworkImage(recipe['image_url']),
+                      image: NetworkImage(recipe['image_url'] ?? 'https://via.placeholder.com/150'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -425,7 +310,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
                       ),
                     ),
                     padding: EdgeInsets.all(12),
@@ -434,11 +322,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          recipe['name'] ?? 'Recipe',
+                          recipe['name'] ?? '',
                           style: GoogleFonts.lexend(
                             color: Colors.white,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -454,186 +342,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildRecipeListsTab(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "My Lists",
-              style: GoogleFonts.lexend(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        // Add List Button
+        Padding(
+          padding: EdgeInsets.only(bottom: 16),
+          child: ElevatedButton.icon(
+            onPressed: () => _createNewList(context),
+            icon: Icon(Icons.add),
+            label: Text(
+              'Create New List',
+              style: GoogleFonts.lexend(),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepOrange,
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            TextButton.icon(
-              onPressed: () {
-                _showCreateListDialog(context);
-              },
-              icon: Icon(Icons.add, color: Colors.deepOrange, size: 18),
-              label: Text(
-                "New List",
-                style: GoogleFonts.lexend(
-                  color: Colors.deepOrange,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-        SizedBox(height: 16),
-        _customLists.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.list_alt,
-                      size: 64,
-                      color: Colors.white30,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      "No custom lists yet",
-                      style: GoogleFonts.lexend(
-                        color: Colors.white70,
-                        fontSize: 16,
+        // Lists
+        Expanded(
+          child: widget.customLists.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.list_alt,
+                        size: 64,
+                        color: Colors.white30,
                       ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      "Create lists to organize your recipes",
-                      style: GoogleFonts.lexend(
-                        color: Colors.white54,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: _customLists.length,
-                itemBuilder: (context, index) {
-                  final list = _customLists[index];
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white12,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      title: Text(
-                        list['name'] ?? 'Unnamed List',
-                        style: GoogleFonts.lexend(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${list['items']?.length ?? 0} items',
+                      SizedBox(height: 16),
+                      Text(
+                        "No recipe lists yet",
                         style: GoogleFonts.lexend(
                           color: Colors.white70,
-                          fontSize: 12,
+                          fontSize: 16,
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete),
-                        onPressed: () async {
-                          // TODO: Implement delete custom list
-                          _loadUserData();
+                      SizedBox(height: 8),
+                      Text(
+                        "Create lists to organize your recipes",
+                        style: GoogleFonts.lexend(
+                          color: Colors.white54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: widget.customLists.length,
+                  itemBuilder: (context, index) {
+                    final listName = widget.customLists.keys.elementAt(index);
+                    final recipes = widget.customLists[listName] ?? [];
+                    return Card(
+                      color: Colors.white12,
+                      margin: EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        title: Text(
+                          listName,
+                          style: GoogleFonts.lexend(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        subtitle: Text(
+                          "${recipes.length} recipes",
+                          style: GoogleFonts.lexend(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                        ),
+                        trailing: Icon(Icons.arrow_forward_ios, color: Colors.white70),
+                        onTap: () {
+                          // Navigate to list details
                         },
                       ),
-                      onTap: () {
-                        // Navigate to list details
-                      },
-                    ),
-                  );
-                },
-              ),
-      ],
-    );
-  }
-
-  void _showCreateListDialog(BuildContext context) {
-    String? newListName;
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            "Create New List",
-            style: GoogleFonts.lexend(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          content: TextField(
-            style: TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: "Enter list name",
-              hintStyle: TextStyle(color: Colors.white54),
-              filled: true,
-              fillColor: Colors.white12,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onChanged: (value) {
-              newListName = value;
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                "Cancel",
-                style: GoogleFonts.lexend(
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (newListName != null && newListName!.trim().isNotEmpty) {
-                  final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                  final trimmedName = newListName!.trim();
-                  final phoneNumber = authProvider.phoneNumber;
-                  if (phoneNumber != null) {
-                    await SupabaseService.createCustomList(
-                      userId: phoneNumber,
-                      listName: trimmedName,
                     );
-                    await _loadUserData(); // Reload data after creating list
-                  }
-                }
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepOrange,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  },
                 ),
-              ),
-              child: Text(
-                "Create",
-                style: GoogleFonts.lexend(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+        ),
+      ],
     );
   }
 }

@@ -57,7 +57,7 @@ class ApiService {
   }
 
   static Future<String?> getInstacartShoppingList(List<dynamic> ingredients) async {
-    final url = Uri.parse("$baseUrl/api/instacart/shopping-list"); // Ensure '/api' prefix is included
+    final url = Uri.parse("$baseUrl/instacart/shopping-list"); // Remove redundant '/api' prefix
     try {
       final headers = await _getHeaders();
       final response = await http.post(

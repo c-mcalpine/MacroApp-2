@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
-import 'package:frontend/screens/search_results_screen.dart';
+import 'package:flutter/services.dart';
 
 class ExploreRecipesScreen extends StatefulWidget {
   final Function(int) onRecipeSelected; // Callback for recipe selection
@@ -53,6 +53,13 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
   ];
 
   List<String> activeFilters = [];
+
+  String _searchQuery = '';
+  String _selectedSortMetric = 'newest'; // Default sort
+  List<String> _selectedCuisines = [];
+  List<String> _selectedTags = [];
+  RangeValues _proteinRatioRange = RangeValues(0, 1); // Protein/Calorie ratio range
+  RangeValues _priceRange = RangeValues(0, 50); // Price range in dollars
 
   @override
   void initState() {
@@ -245,6 +252,304 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
     );
   }
 
+  void _showAdvancedSearch() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.9,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              builder: (_, controller) {
+                return Container(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Advanced Search",
+                            style: GoogleFonts.lexend(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close, color: Colors.white),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      
+                      // Search Bar
+                      TextField(
+                        style: TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: "Search recipes...",
+                          hintStyle: TextStyle(color: Colors.white54),
+                          prefixIcon: Icon(Icons.search, color: Colors.white),
+                          filled: true,
+                          fillColor: Colors.white12,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                        onChanged: (value) {
+                          setState(() => _searchQuery = value);
+                        },
+                      ),
+                      SizedBox(height: 24),
+
+                      // Sort By
+                      Text(
+                        "Sort By",
+                        style: GoogleFonts.lexend(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          ChoiceChip(
+                            label: Text('Newest'),
+                            selected: _selectedSortMetric == 'newest',
+                            onSelected: (selected) {
+                              setState(() => _selectedSortMetric = 'newest');
+                            },
+                          ),
+                          ChoiceChip(
+                            label: Text('Protein/Cal Ratio'),
+                            selected: _selectedSortMetric == 'protein_ratio',
+                            onSelected: (selected) {
+                              setState(() => _selectedSortMetric = 'protein_ratio');
+                            },
+                          ),
+                          ChoiceChip(
+                            label: Text('Cost/Protein'),
+                            selected: _selectedSortMetric == 'cost_protein',
+                            onSelected: (selected) {
+                              setState(() => _selectedSortMetric = 'cost_protein');
+                            },
+                          ),
+                          ChoiceChip(
+                            label: Text('Meal Prep Score'),
+                            selected: _selectedSortMetric == 'meal_prep_score',
+                            onSelected: (selected) {
+                              setState(() => _selectedSortMetric = 'meal_prep_score');
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 24),
+
+                      // Protein/Calorie Ratio Range
+                      Text(
+                        "Protein/Calorie Ratio",
+                        style: GoogleFonts.lexend(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      RangeSlider(
+                        values: _proteinRatioRange,
+                        min: 0,
+                        max: 1,
+                        divisions: 20,
+                        labels: RangeLabels(
+                          _proteinRatioRange.start.toStringAsFixed(2),
+                          _proteinRatioRange.end.toStringAsFixed(2),
+                        ),
+                        onChanged: (RangeValues values) {
+                          setState(() => _proteinRatioRange = values);
+                        },
+                      ),
+                      
+                      // Price Range
+                      Text(
+                        "Price Range (\$)",
+                        style: GoogleFonts.lexend(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      RangeSlider(
+                        values: _priceRange,
+                        min: 0,
+                        max: 50,
+                        divisions: 50,
+                        labels: RangeLabels(
+                          "\$${_priceRange.start.toInt()}",
+                          "\$${_priceRange.end.toInt()}",
+                        ),
+                        onChanged: (RangeValues values) {
+                          setState(() => _priceRange = values);
+                        },
+                      ),
+
+                      // Apply Button
+                      SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepOrange,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            _applyAdvancedSearch();
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            "Apply Filters",
+                            style: GoogleFonts.lexend(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _applyAdvancedSearch() {
+    setState(() {
+      recipes = ApiService.getRecipes().then((allRecipes) {
+        // Filter recipes based on search criteria
+        var filteredRecipes = allRecipes.where((recipe) {
+          // Text search
+          if (_searchQuery.isNotEmpty) {
+            final name = (recipe['name'] ?? '').toString().toLowerCase();
+            final description = (recipe['description'] ?? '').toString().toLowerCase();
+            if (!name.contains(_searchQuery.toLowerCase()) && 
+                !description.contains(_searchQuery.toLowerCase())) {
+              return false;
+            }
+          }
+
+          // Protein/Calorie ratio filter
+          final protein = recipe['nutrition']?['protein'] ?? 0;
+          final calories = recipe['nutrition']?['calories'] ?? 1;
+          final proteinRatio = protein / calories;
+          if (proteinRatio < _proteinRatioRange.start || 
+              proteinRatio > _proteinRatioRange.end) {
+            return false;
+          }
+
+          // Price filter
+          final price = recipe['price'] ?? 0;
+          if (price < _priceRange.start || price > _priceRange.end) {
+            return false;
+          }
+
+          // Cuisine filter
+          if (_selectedCuisines.isNotEmpty) {
+            final cuisine = recipe['cuisine'] ?? '';
+            if (!_selectedCuisines.contains(cuisine)) {
+              return false;
+            }
+          }
+
+          // Tags filter
+          if (_selectedTags.isNotEmpty) {
+            final tags = (recipe['tags'] as List<dynamic>?)?.map((t) => t['tag_name'].toString()) ?? [];
+            if (!_selectedTags.every((tag) => tags.contains(tag))) {
+              return false;
+            }
+          }
+
+          return true;
+        }).toList();
+
+        // Sort based on selected metric
+        switch (_selectedSortMetric) {
+          case 'protein_ratio':
+            filteredRecipes.sort((a, b) {
+              final aProtein = a['nutrition']?['protein'] ?? 0;
+              final aCalories = a['nutrition']?['calories'] ?? 1;
+              final bProtein = b['nutrition']?['protein'] ?? 0;
+              final bCalories = b['nutrition']?['calories'] ?? 1;
+              return (bProtein / bCalories).compareTo(aProtein / aCalories);
+            });
+            break;
+          case 'cost_protein':
+            filteredRecipes.sort((a, b) {
+              final aPrice = a['price'] ?? 0;
+              final aProtein = a['nutrition']?['protein'] ?? 1;
+              final bPrice = b['price'] ?? 0;
+              final bProtein = b['nutrition']?['protein'] ?? 1;
+              return (aPrice / aProtein).compareTo(bPrice / bProtein);
+            });
+            break;
+          case 'meal_prep_score':
+            filteredRecipes.sort((a, b) {
+              return _calculateMealPrepScore(b).compareTo(_calculateMealPrepScore(a));
+            });
+            break;
+          default: // 'newest'
+            filteredRecipes.sort((a, b) {
+              final aDate = DateTime.tryParse(a['created_at'] ?? '') ?? DateTime.now();
+              final bDate = DateTime.tryParse(b['created_at'] ?? '') ?? DateTime.now();
+              return bDate.compareTo(aDate);
+            });
+        }
+
+        return filteredRecipes;
+      });
+    });
+  }
+
+  double _calculateMealPrepScore(Map<String, dynamic> recipe) {
+    double score = 0;
+    
+    // Storage type score (refrigerated = 1, frozen = 2)
+    final storageType = recipe['storage_type'] ?? '';
+    if (storageType == 'refrigerated') score += 1;
+    if (storageType == 'frozen') score += 2;
+
+    // Prep time score (inverse relationship - shorter prep time = higher score)
+    final prepTime = recipe['prep_time'] ?? 60;
+    score += (120 - prepTime) / 30; // Max 4 points for 0 min, 0 points for 120+ min
+
+    // Ingredient count score (fewer ingredients = higher score)
+    final ingredientCount = (recipe['ingredients'] as List<dynamic>?)?.length ?? 10;
+    score += (20 - ingredientCount) / 5; // Max 4 points for 0 ingredients
+
+    // Bulk meal prep tag bonus
+    final tags = (recipe['tags'] as List<dynamic>?)?.map((t) => t['tag_name'].toString()) ?? [];
+    if (tags.contains('Bulk Meal Prep')) score += 3;
+
+    return score;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -265,12 +570,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
             ),
             IconButton(
               icon: Icon(Icons.search, color: Colors.white),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SearchResultsScreen()),
-                );
-              },
+              onPressed: _showAdvancedSearch,
             ),
           ],
         ),
@@ -409,11 +709,21 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                         categorizedRecipes[recipe['meal_type']]!.add(recipe);
                       }
                     }
+                    
+                    // Shuffle each category's recipes to randomize order
+                    categorizedRecipes.forEach((key, recipes) {
+                      recipes.shuffle();
+                      // Limit to 10 recipes per category
+                      if (recipes.length > 10) {
+                        recipes.removeRange(10, recipes.length);
+                      }
+                    });
+                    
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: categorizedRecipes.entries.map((entry) {
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
+                          padding: const EdgeInsets.only(bottom: 24.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -434,99 +744,99 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                   ],
                                 ),
                               ),
-                              SizedBox(height: 9),
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: NeverScrollableScrollPhysics(),
-                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3, // Increase the number of columns
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                  childAspectRatio: 2 / 3, // Adjust aspect ratio for smaller tiles
-                                ),
-                                itemCount: entry.value.length,
-                                itemBuilder: (context, recipeIndex) {
-                                  var recipe = entry.value[recipeIndex];
-                                  return GestureDetector(
-                                    onTap: () => navigateToRecipe(recipe['recipe_id']),
-                                    child: Stack(
-                                      children: [
-                                        // Recipe Image
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                image: NetworkImage(recipe['image_url']),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        // Gradient Overlay
-                                        Positioned.fill(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        // Recipe Short Name
-                                        Positioned(
-                                          bottom: 8,
-                                          left: 8,
-                                          right: 8,
-                                          child: Text(
-                                            recipe['short_name'] ?? recipe['name'],
-                                            style: GoogleFonts.lexend(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                              shadows: [
-                                                Shadow(
-                                                  offset: Offset(0, 1),
-                                                  blurRadius: 4,
-                                                  color: Colors.black,
-                                                ),
-                                              ],
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        // Tags on the Right Side
-                                        Positioned(
-                                          top: 8,
-                                          right: 8,
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.end,
-                                            children: (recipe['tags'] as List<dynamic>? ?? []).map((tag) {
-                                              return Container(
-                                                margin: EdgeInsets.only(bottom: 4),
-                                                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              SizedBox(height: 12),
+                              SizedBox(
+                                height: 220, // Fixed height for the carousel
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: entry.value.length,
+                                  itemBuilder: (context, recipeIndex) {
+                                    var recipe = entry.value[recipeIndex];
+                                    return Container(
+                                      width: 160, // Fixed width for each recipe card
+                                      margin: EdgeInsets.only(right: 12),
+                                      child: GestureDetector(
+                                        onTap: () => navigateToRecipe(recipe['recipe_id']),
+                                        child: Stack(
+                                          children: [
+                                            // Recipe Image
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(12),
+                                              child: Container(
                                                 decoration: BoxDecoration(
-                                                  color: _getTagColor(tag['tag_name'] ?? "Unknown"),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                ),
-                                                child: Text(
-                                                  tag['tag_name'] ?? '',
-                                                  style: GoogleFonts.lexend(
-                                                    fontSize: 10,
-                                                    color: Colors.white,
+                                                  image: DecorationImage(
+                                                    image: NetworkImage(recipe['image_url'] ?? 'https://via.placeholder.com/150'),
+                                                    fit: BoxFit.cover,
                                                   ),
                                                 ),
-                                              );
-                                            }).toList(),
-                                          ),
+                                              ),
+                                            ),
+                                            // Gradient Overlay
+                                            Positioned.fill(
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            // Recipe Short Name
+                                            Positioned(
+                                              bottom: 12,
+                                              left: 12,
+                                              right: 12,
+                                              child: Text(
+                                                recipe['short_name'] ?? recipe['name'],
+                                                style: GoogleFonts.lexend(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  shadows: [
+                                                    Shadow(
+                                                      offset: Offset(0, 1),
+                                                      blurRadius: 4,
+                                                      color: Colors.black,
+                                                    ),
+                                                  ],
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            // Tags on the Right Side
+                                            Positioned(
+                                              top: 12,
+                                              right: 12,
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.end,
+                                                children: (recipe['tags'] as List<dynamic>? ?? []).take(2).map((tag) {
+                                                  return Container(
+                                                    margin: EdgeInsets.only(bottom: 4),
+                                                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    decoration: BoxDecoration(
+                                                      color: _getTagColor(tag['tag_name'] ?? "Unknown"),
+                                                      borderRadius: BorderRadius.circular(4),
+                                                    ),
+                                                    child: Text(
+                                                      tag['tag_name'] ?? '',
+                                                      style: GoogleFonts.lexend(
+                                                        fontSize: 10,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -793,7 +1103,7 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: NetworkImage(recipe['image_url']),
+                                      image: NetworkImage(recipe['image_url'] ?? 'https://via.placeholder.com/150'),
                                       fit: BoxFit.cover,
                                     ),
                                   ),

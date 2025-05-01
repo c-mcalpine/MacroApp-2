@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../config/app_config.dart';
 
 class SupabaseService {
   static SupabaseClient? _client;
@@ -10,24 +10,6 @@ class SupabaseService {
     if (_isInitialized) return;
     
     try {
-      final supabaseUrl = dotenv.env['SUPABASE_URL'];
-      final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
-      
-      print('Initializing Supabase with:');
-      print('URL: $supabaseUrl');
-      print('Anon Key present: ${supabaseAnonKey != null}');
-      
-      if (supabaseUrl == null || supabaseAnonKey == null) {
-        print('ERROR: Supabase environment variables are missing. Please check your .env file.');
-        _isInitialized = false;
-        return;
-      }
-      
-      await Supabase.initialize(
-        url: supabaseUrl,
-        anonKey: supabaseAnonKey,
-      );
-      
       _client = Supabase.instance.client;
       _isInitialized = true;
       
@@ -52,161 +34,108 @@ class SupabaseService {
     return _client!;
   }
   
-  // User operations
+  // Get user by phone number
   static Future<Map<String, dynamic>?> getUserByPhone(String phoneNumber) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Returning mock user data.');
-        return {
-          'id': 'mock-user-id',
-          'phone_number': phoneNumber,
-          'username': 'Mock User',
-          'created_at': DateTime.now().toIso8601String(),
-        };
-      }
-      
-      // Try to get the user
-      final response = await client
-          .from('users')
-          .select()
-          .eq('phone_number', phoneNumber)
-          .maybeSingle();
-      
-      if (response == null) {
-        print('No user found with phone number: $phoneNumber');
-        return null;
-      }
-      
+      final response = await _client!.from('users').select().eq('phone', phoneNumber).single();
       return response;
     } catch (e) {
-      print('Error getting user by phone: $e');
       if (e.toString().contains('relation "users" does not exist')) {
-        print('Users table does not exist. Creating table...');
-        try {
-          // Note: You need to create the table in Supabase dashboard
-          print('Please create the users table in your Supabase dashboard with the following SQL:');
-          print('''
-            create table public.users (
-              id uuid default uuid_generate_v4() primary key,
-              phone_number text unique not null,
-              username text,
-              created_at timestamp with time zone default timezone('utc'::text, now()) not null
-            );
-          ''');
-        } catch (tableError) {
-          print('Error creating users table: $tableError');
-        }
+        print('ERROR: The users table does not exist in your Supabase database.');
+        print('Please create the table in your Supabase dashboard with the following SQL:');
+        print('''
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  phone TEXT UNIQUE NOT NULL,
+  name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+''');
+      } else {
+        print('Error getting user by phone: $e');
       }
       return null;
     }
   }
   
-  static Future<Map<String, dynamic>> createUser({
-    required String phoneNumber,
-    required String username,
-  }) async {
+  // Create a new user
+  static Future<Map<String, dynamic>?> createUser(String phoneNumber, String name) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Returning mock user data.');
-        return {
-          'id': 'mock-user-id',
-          'phone_number': phoneNumber,
-          'username': username,
-          'created_at': DateTime.now().toIso8601String(),
-        };
-      }
+      final response = await _client!.from('users').insert({
+        'phone': phoneNumber,
+        'name': name,
+      }).select().single();
       
-      // Check if user already exists
-      final existingUser = await getUserByPhone(phoneNumber);
-      if (existingUser != null) {
-        print('User already exists with phone number: $phoneNumber');
-        return existingUser;
-      }
-      
-      // Create new user
-      final response = await client
-          .from('users')
-          .insert({
-            'phone_number': phoneNumber,
-            'username': username,
-            'created_at': DateTime.now().toIso8601String(),
-          })
-          .select()
-          .single();
-      
-      print('Successfully created user: $response');
       return response;
     } catch (e) {
-      print('Error creating user: $e');
-      if (e.toString().contains('relation "users" does not exist')) {
-        print('Users table does not exist. Please create it in the Supabase dashboard.');
+      if (e.toString().contains('duplicate key value violates unique constraint')) {
+        print('ERROR: A user with this phone number already exists.');
+      } else if (e.toString().contains('relation "users" does not exist')) {
+        print('ERROR: The users table does not exist in your Supabase database.');
+        print('Please create the table in your Supabase dashboard with the following SQL:');
+        print('''
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  phone TEXT UNIQUE NOT NULL,
+  name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+''');
+      } else {
+        print('Error creating user: $e');
       }
-      throw Exception('Failed to create user: $e');
+      return null;
     }
   }
   
-  static Future<Map<String, dynamic>> updateUsername({
-    required String phoneNumber,
-    required String newUsername,
-  }) async {
+  // Update user's name
+  static Future<Map<String, dynamic>?> updateUsername(String phoneNumber, String newName) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        throw Exception('Supabase is not initialized. Please check your environment variables and try again.');
-      }
-      
-      // Check if user exists
-      final existingUser = await getUserByPhone(phoneNumber);
-      if (existingUser == null) {
-        print('No user found with phone number: $phoneNumber. Creating new user...');
-        return await createUser(
-          phoneNumber: phoneNumber,
-          username: newUsername,
-        );
-      }
-      
-      // Update username
-      final response = await client
-          .from('users')
-          .update({'username': newUsername})
-          .eq('phone_number', phoneNumber)
+      final response = await _client!.from('users')
+          .update({'name': newName})
+          .eq('phone', phoneNumber)
           .select()
           .single();
       
-      print('Successfully updated username: $response');
       return response;
     } catch (e) {
-      print('Error updating username: $e');
-      throw Exception('Failed to update username: $e');
+      if (e.toString().contains('relation "users" does not exist')) {
+        print('ERROR: The users table does not exist in your Supabase database.');
+        print('Please create the table in your Supabase dashboard with the following SQL:');
+        print('''
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  phone TEXT UNIQUE NOT NULL,
+  name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+''');
+      } else {
+        print('Error updating user name: $e');
+      }
+      return null;
     }
   }
   
   // Recipe operations
   static Future<List<Map<String, dynamic>>> getHeartedRecipes(String userId) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Returning mock hearted recipes.');
-        return [
-          {
-            'recipe_id': 1,
-            'recipes': {
-              'id': 1,
-              'name': 'Mock Recipe 1',
-              'description': 'This is a mock recipe',
-              'image_url': 'https://via.placeholder.com/150',
-            }
-          },
-          {
-            'recipe_id': 2,
-            'recipes': {
-              'id': 2,
-              'name': 'Mock Recipe 2',
-              'description': 'This is another mock recipe',
-              'image_url': 'https://via.placeholder.com/150',
-            }
-          }
-        ];
-      }
-      
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
@@ -227,12 +156,11 @@ class SupabaseService {
   }
   
   static Future<bool> heartRecipe(String userId, int recipeId) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Mocking heart recipe operation.');
-        return true;
-      }
-      
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
@@ -256,12 +184,11 @@ class SupabaseService {
   }
   
   static Future<bool> unheartRecipe(String userId, int recipeId) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Mocking unheart recipe operation.');
-        return true;
-      }
-      
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
@@ -284,25 +211,11 @@ class SupabaseService {
   
   // Custom lists operations
   static Future<List<Map<String, dynamic>>> getCustomLists(String userId) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Returning mock custom lists.');
-        return [
-          {
-            'id': 'mock-list-1',
-            'user_id': userId,
-            'name': 'My Favorite Recipes',
-            'created_at': DateTime.now().toIso8601String(),
-          },
-          {
-            'id': 'mock-list-2',
-            'user_id': userId,
-            'name': 'Weekend Meals',
-            'created_at': DateTime.now().toIso8601String(),
-          }
-        ];
-      }
-      
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
@@ -326,17 +239,11 @@ class SupabaseService {
     required String userId,
     required String listName,
   }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Returning mock custom list.');
-        return {
-          'id': 'mock-list-${DateTime.now().millisecondsSinceEpoch}',
-          'user_id': userId,
-          'name': listName,
-          'created_at': DateTime.now().toIso8601String(),
-        };
-      }
-      
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
@@ -365,12 +272,11 @@ class SupabaseService {
     required String listId,
     required int recipeId,
   }) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+    
     try {
-      if (!_isInitialized) {
-        print('Supabase not initialized. Mocking add recipe to list operation.');
-        return true;
-      }
-      
       await client
           .from('list_recipes')
           .insert({
