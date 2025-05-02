@@ -6,3 +6,5 @@ twilio==7.0.0
 PyJWT==2.8.0 
 gunicorn
 pandas
+supabase
+openai
