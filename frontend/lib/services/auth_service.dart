@@ -52,7 +52,7 @@ class AuthService {
     try {
       // Check if in dev mode
       if (await isDevMode()) {
-        // In dev mode, just save the phone number and return success
+        print("Running in dev mode, using test credentials");
         await setDevCredentials(phoneNumber, '123456');
         return true;
       }
@@ -60,11 +60,12 @@ class AuthService {
       // Format phone number to E.164 format if needed
       String formattedPhone = phoneNumber;
       if (!phoneNumber.startsWith('+')) {
-        // Remove any non-digit characters
         String digitsOnly = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
-        // Add US country code if not present
         formattedPhone = '+1$digitsOnly';
       }
+      
+      print("Sending OTP to: $formattedPhone");
+      print("Using base URL: $baseUrl");
 
       final response = await http.post(
         Uri.parse("$baseUrl/auth/send-otp"),
@@ -72,14 +73,18 @@ class AuthService {
         body: jsonEncode({"phone_number": formattedPhone}),
       );
 
+      print("OTP Response Status: ${response.statusCode}");
+      print("OTP Response Body: ${response.body}");
+
       if (response.statusCode == 200) {
         return true;
       } else {
-        print("Failed to send OTP: ${response.body}");
+        print("Failed to send OTP. Status: ${response.statusCode}, Body: ${response.body}");
         return false;
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       print("Exception during sendOTP: $e");
+      print("Stack trace: $stackTrace");
       return false;
     }
   }
