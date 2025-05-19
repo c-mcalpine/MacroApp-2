@@ -14,7 +14,7 @@ export async function getUserByPhone(phone: string) {
   const { data, error } = await supabase
     .from('users')
     .select('*')
-    .eq('phone', phone)
+    .eq('phone_number', phone)
     .single();
 
   if (error) {
@@ -29,7 +29,7 @@ export async function createUser(phone: string, username: string) {
   const { data, error } = await supabase
     .from('users')
     .insert([
-      { phone, name: username }
+      { phone_number: phone, name: username }
     ])
     .select()
     .single();
@@ -46,7 +46,7 @@ export async function updateUsername(phone: string, username: string) {
   const { data, error } = await supabase
     .from('users')
     .update({ name: username })
-    .eq('phone', phone)
+    .eq('phone_number', phone)
     .select()
     .single();
 

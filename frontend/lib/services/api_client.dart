@@ -29,20 +29,31 @@ class ApiClient {
       print('Sending OTP request to: $baseUrl/auth/send-otp');
       print('Phone number: $phoneNumber');
       
+      final uri = Uri.parse('$baseUrl/auth/send-otp');
+      print('Full URI: $uri');
+      
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+      print('Request headers: $headers');
+      
+      final body = jsonEncode({'phone_number': phoneNumber});
+      print('Request body: $body');
+      
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/send-otp'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({'phone_number': phoneNumber}),
+        uri,
+        headers: headers,
+        body: body,
       );
 
       print('Response status code: ${response.statusCode}');
+      print('Response headers: ${response.headers}');
       print('Response body: ${response.body}');
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to send OTP: ${response.statusCode} - ${response.body}');
+        final errorData = jsonDecode(response.body);
+        throw Exception('Failed to send OTP: ${errorData['error']}${errorData['details'] ? ' - ${errorData['details']}' : ''}');
       }
 
       return jsonDecode(response.body);
@@ -50,6 +61,11 @@ class ApiClient {
       print('Error in sendOTP: $e');
       if (e is http.ClientException) {
         print('Network error details: ${e.message}');
+        // Check if it's a CORS issue
+        if (e.message.contains('Failed to fetch')) {
+          print('Possible CORS issue. Check if the API endpoint is accessible and CORS is properly configured.');
+          print('Make sure the API endpoint is accessible at: $baseUrl/auth/send-otp');
+        }
       }
       rethrow;
     }
@@ -60,17 +76,36 @@ class ApiClient {
     String otp, {
     String? username,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/verify-otp'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'phone_number': phoneNumber,
-        'otp': otp,
-        if (username != null) 'username': username,
-      }),
-    );
+    try {
+      print('Verifying OTP for phone: $phoneNumber');
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/verify-otp'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'phone_number': phoneNumber,
+          'otp': otp,
+          if (username != null) 'username': username,
+        }),
+      );
 
-    return jsonDecode(response.body);
+      print('Verify OTP response status code: ${response.statusCode}');
+      print('Verify OTP response body: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to verify OTP: ${response.statusCode} - ${response.body}');
+      }
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error in verifyOTP: $e');
+      if (e is http.ClientException) {
+        print('Network error details: ${e.message}');
+      }
+      rethrow;
+    }
   }
 
   static Future<Map<String, dynamic>> updateUsername(
