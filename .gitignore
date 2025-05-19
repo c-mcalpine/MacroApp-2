@@ -22,4 +22,21 @@ android/app/release/
 .vscode/
 *.iml
 *.iws
-.DS_Store 
+.DS_Store
+
+# Dependencies
+node_modules/
+macro-app-api/node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+Thumbs.db 
