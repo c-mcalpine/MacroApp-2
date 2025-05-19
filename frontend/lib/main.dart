@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart' as provider;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/app_config.dart';
@@ -27,13 +27,16 @@ void main() async {
     anonKey: appConfig.supabaseAnonKey,
   );
   
+  // Initialize SupabaseService
+  await SupabaseService.initialize();
+  
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return provider.ChangeNotifierProvider(
       create: (context) => AuthProvider(),
       child: MaterialApp(
         title: 'Macro App',
@@ -45,16 +48,48 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.lexendTextTheme(ThemeData.dark().textTheme),
         ),
         navigatorKey: AuthService.navigatorKey,
-        home: Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            return authProvider.isAuthenticated
-                ? HomeScreen(
-                    onLogout: () async {
-                      await AuthService.logout();
-                      authProvider.logout();
-                    },
-                  )
-                : LoginScreen();
+        home: FutureBuilder<bool>(
+          future: AuthService.isAuthenticated(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Scaffold(
+                backgroundColor: Colors.black,
+                body: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.deepOrange),
+                  ),
+                ),
+              );
+            }
+
+            final isAuthenticated = snapshot.data ?? false;
+            if (isAuthenticated) {
+              // Get auth data and update AuthProvider
+              AuthService.getAuthData().then((authData) {
+                if (authData != null) {
+                  final context = AuthService.navigatorKey.currentContext;
+                  if (context != null) {
+                    provider.Provider.of<AuthProvider>(context, listen: false).login(
+                      authData['user_id'],
+                      userName: authData['user_name'],
+                    );
+                  }
+                }
+              });
+            }
+
+            return provider.Consumer<AuthProvider>(
+              builder: (context, authProvider, child) {
+                return authProvider.isAuthenticated
+                    ? HomeScreen(
+                        onLogout: () async {
+                          await AuthService.logout();
+                          authProvider.logout();
+                        },
+                      )
+                    : LoginScreen();
+              },
+            );
           },
         ),
       ),

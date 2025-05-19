@@ -6,6 +6,7 @@ import 'package:frontend/services/supabase_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
+import 'api_client.dart';
 
 class AuthService {
   static final String baseUrl = dotenv.env['API_BASE_URL']!;
@@ -21,6 +22,132 @@ class AuthService {
 
   // Initialize shared preferences
   static Future<SharedPreferences> get _prefs async => await SharedPreferences.getInstance();
+
+  // Check if user is authenticated
+  static Future<bool> isAuthenticated() async {
+    final prefs = await _prefs;
+    final authDataString = prefs.getString(_authKey);
+    if (authDataString == null) return false;
+
+    try {
+      final authData = json.decode(authDataString) as Map<String, dynamic>;
+      final token = authData['token'];
+      if (token == null) return false;
+
+      // TODO: Add token validation if needed
+      return true;
+    } catch (e) {
+      print('Error checking authentication: $e');
+      return false;
+    }
+  }
+
+  // Get authentication data
+  static Future<Map<String, dynamic>?> getAuthData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final authDataString = prefs.getString(_authKey);
+    if (authDataString == null) return null;
+    
+    try {
+      return json.decode(authDataString) as Map<String, dynamic>;
+    } catch (e) {
+      print('Error getting auth data: $e');
+      return null;
+    }
+  }
+
+  // Save authentication data
+  static Future<void> _saveAuthData({
+    required String token,
+    required String userId,
+    required String userName,
+  }) async {
+    final prefs = await _prefs;
+    
+    // Save individual values
+    await prefs.setString(_tokenKey, token);
+    await prefs.setString(_userIdKey, userId);
+    await prefs.setString(_userNameKey, userName);
+    await prefs.setBool(_isAuthenticatedKey, true);
+    
+    // Save complete auth data
+    final authData = {
+      'token': token,
+      'user_id': userId,
+      'user_name': userName,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+    await prefs.setString(_authKey, json.encode(authData));
+  }
+
+  // Verify OTP and get authentication token
+  static Future<Map<String, dynamic>> verifyOTP(String phoneNumber, String otpCode, {String? username}) async {
+    try {
+      final response = await ApiClient.verifyOTP(phoneNumber, otpCode, username: username);
+      
+      if (response['success'] == true) {
+        await _saveAuthData(
+          token: response['token'],
+          userId: response['user_id'],
+          userName: response['user_name'],
+        );
+      }
+      
+      return response;
+    } catch (e) {
+      print('Error verifying OTP: $e');
+      return {'success': false, 'error': 'Failed to verify OTP'};
+    }
+  }
+
+  // Logout user
+  static Future<void> logout() async {
+    final prefs = await _prefs;
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_userIdKey);
+    await prefs.remove(_userNameKey);
+    await prefs.setBool(_isAuthenticatedKey, false);
+    await prefs.remove(_authKey);
+    
+    // Update AuthProvider
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      Provider.of<AuthProvider>(context, listen: false).logout();
+    }
+  }
+
+  // Get authenticated headers for API requests
+  static Future<Map<String, String>> getAuthHeaders() async {
+    final prefs = await _prefs;
+    final authDataString = prefs.getString(_authKey);
+    if (authDataString == null) {
+      return {"Content-Type": "application/json"};
+    }
+    
+    try {
+      final authData = json.decode(authDataString) as Map<String, dynamic>;
+      final token = authData['token'];
+      return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      };
+    } catch (e) {
+      print('Error getting auth headers: $e');
+      return {"Content-Type": "application/json"};
+    }
+  }
+
+  // Get user ID
+  static Future<String?> getUserId() async {
+    final prefs = await _prefs;
+    return prefs.getString(_userIdKey);
+  }
+
+  // Get user name
+  static Future<String?> getUserName() async {
+    final prefs = await _prefs;
+    return prefs.getString(_userNameKey);
+  }
 
   // Development mode methods
   static Future<bool> isDevMode() async {
@@ -47,248 +174,44 @@ class AuthService {
     };
   }
 
-  // Send OTP to phone number
+  // Send OTP
   static Future<bool> sendOTP(String phoneNumber) async {
     try {
-      // Check if in dev mode
-      if (await isDevMode()) {
-        print("Running in dev mode, using test credentials");
-        await setDevCredentials(phoneNumber, '123456');
-        return true;
-      }
-
-      // Format phone number to E.164 format if needed
-      String formattedPhone = phoneNumber;
-      if (!phoneNumber.startsWith('+')) {
-        String digitsOnly = phoneNumber.replaceAll(RegExp(r'[^\d]'), '');
-        formattedPhone = '+1$digitsOnly';
-      }
-      
-      print("Sending OTP to: $formattedPhone");
-      print("Using base URL: $baseUrl");
-
-      final response = await http.post(
-        Uri.parse("$baseUrl/auth/send-otp"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"phone_number": formattedPhone}),
-      );
-
-      print("OTP Response Status: ${response.statusCode}");
-      print("OTP Response Body: ${response.body}");
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        print("Failed to send OTP. Status: ${response.statusCode}, Body: ${response.body}");
-        return false;
-      }
-    } catch (e, stackTrace) {
-      print("Exception during sendOTP: $e");
-      print("Stack trace: $stackTrace");
+      final response = await ApiClient.sendOTP(phoneNumber);
+      return response['success'] == true;
+    } catch (e) {
+      print('Error sending OTP: $e');
       return false;
     }
   }
 
-  // Verify OTP and get authentication token
-  static Future<Map<String, dynamic>> verifyOTP(String phoneNumber, String otpCode, {String? username}) async {
+  // Update username
+  static Future<Map<String, dynamic>> updateUsername(String phoneNumber, String username) async {
     try {
-      // Check if in dev mode
-      if (await isDevMode()) {
-        final devCreds = await getDevCredentials();
-        
-        // In dev mode, accept any OTP if phone matches
-        if (phoneNumber == devCreds['phone']) {
-          // Check if user exists in Supabase
-          final user = await SupabaseService.getUserByPhone(phoneNumber);
-          
-          if (user == null && username != null) {
-            // Create new user in Supabase
-            await SupabaseService.createUser(phoneNumber, username);
-          }
-          
-          // Save auth data
-          await _saveAuthData(
-            token: 'dev_token',
-            userId: phoneNumber,
-            userName: username ?? 'User',
-          );
-          
-          // Update AuthProvider
-          final context = navigatorKey.currentContext;
-          if (context != null) {
-            Provider.of<AuthProvider>(context, listen: false).login(phoneNumber, userName: username ?? 'User');
-          }
-          
-          return {
-            'success': true,
-            'user_id': phoneNumber,
-            'user_name': username ?? 'User',
-          };
-        }
-        
-        return {'success': false, 'error': 'Invalid OTP'};
+      final token = await getToken();
+      if (token == null) {
+        return {'success': false, 'error': 'Not authenticated'};
       }
 
-      final response = await http.post(
-        Uri.parse("$baseUrl/auth/verify-otp"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "phone_number": phoneNumber,
-          "otp_code": otpCode,
-          if (username != null) 'username': username,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && data['token'] != null) {
-          // Check if user exists in Supabase
-          final user = await SupabaseService.getUserByPhone(phoneNumber);
-          
-          if (user == null && username != null) {
-            // Create new user in Supabase
-            await SupabaseService.createUser(phoneNumber, username);
-          }
-          
-          // Save auth data
-          await _saveAuthData(
-            token: data['token'],
-            userId: data['user_id'] ?? phoneNumber,
-            userName: data['user_name'] ?? username ?? 'User',
-          );
-          
-          // Update AuthProvider
-          final context = navigatorKey.currentContext;
-          if (context != null) {
-            Provider.of<AuthProvider>(context, listen: false).login(
-              phoneNumber,
-              userName: data['user_name'] ?? username ?? 'User',
-            );
-          }
-          
-          return {
-            'success': true,
-            'user_id': data['user_id'] ?? phoneNumber,
-            'user_name': data['user_name'] ?? username ?? 'User',
-          };
-        }
+      final response = await ApiClient.updateUsername(token, username);
+      
+      if (response['success'] == true) {
+        await _saveAuthData(
+          token: response['token'],
+          userId: response['user_id'],
+          userName: response['user_name'],
+        );
       }
-      return {'success': false, 'error': 'Invalid OTP'};
+      
+      return response;
     } catch (e) {
-      print("Exception during verifyOTP: $e");
-      return {'success': false, 'error': 'Authentication failed'};
+      print('Error updating username: $e');
+      return {'success': false, 'error': 'Failed to update username'};
     }
   }
 
-  // Save authentication data to SharedPreferences
-  static Future<void> _saveAuthData({
-    required String token,
-    required String userId,
-    required String userName,
-  }) async {
-    final prefs = await _prefs;
-    await prefs.setString(_tokenKey, token);
-    await prefs.setString(_userIdKey, userId);
-    await prefs.setString(_userNameKey, userName);
-    await prefs.setBool(_isAuthenticatedKey, true);
-    
-    // Also save the complete auth data
-    final authData = {
-      'token': token,
-      'user_id': userId,
-      'user_name': userName,
-    };
-    await prefs.setString(_authKey, json.encode(authData));
-  }
-
-  // Check if user is authenticated
-  static Future<bool> isAuthenticated() async {
-    final prefs = await _prefs;
-    final token = prefs.getString(_tokenKey);
-    if (token == null) return false;
-
-    // TODO: Add token validation if needed
-    return true;
-  }
-
-  // Get authentication token
   static Future<String?> getToken() async {
     final prefs = await _prefs;
     return prefs.getString(_tokenKey);
-  }
-
-  // Get user ID
-  static Future<String?> getUserId() async {
-    final prefs = await _prefs;
-    return prefs.getString(_userIdKey);
-  }
-
-  // Get user name
-  static Future<String?> getUserName() async {
-    final prefs = await _prefs;
-    return prefs.getString(_userNameKey);
-  }
-
-  // Logout user
-  static Future<void> logout() async {
-    final prefs = await _prefs;
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userIdKey);
-    await prefs.remove(_userNameKey);
-    await prefs.setBool(_isAuthenticatedKey, false);
-    await prefs.remove(_authKey);
-  }
-
-  // Get authenticated headers for API requests
-  static Future<Map<String, String>> getAuthHeaders() async {
-    final prefs = await _prefs;
-    final token = prefs.getString(_tokenKey);
-    return {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer $token",
-    };
-  }
-
-  // Update username
-  static Future<Map<String, dynamic>> updateUsername(String phoneNumber, String newUsername) async {
-    try {
-      // Update username in Supabase
-      await SupabaseService.updateUsername(phoneNumber, newUsername);
-      
-      // Update local storage
-      final prefs = await _prefs;
-      await prefs.setString(_userNameKey, newUsername);
-      
-      // Update auth data
-      final authDataString = prefs.getString(_authKey);
-      if (authDataString != null) {
-        final authData = json.decode(authDataString) as Map<String, dynamic>;
-        authData['user_name'] = newUsername;
-        await prefs.setString(_authKey, json.encode(authData));
-      }
-      
-      return {
-        'success': true,
-        'user_name': newUsername,
-      };
-    } catch (e) {
-      print('Error updating username: $e');
-      return {
-        'success': false,
-        'error': 'Failed to update username',
-      };
-    }
-  }
-
-  static Future<Map<String, dynamic>?> getAuthData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final authDataString = prefs.getString(_authKey);
-    if (authDataString == null) return null;
-    
-    try {
-      return json.decode(authDataString) as Map<String, dynamic>;
-    } catch (e) {
-      return null;
-    }
   }
 } 

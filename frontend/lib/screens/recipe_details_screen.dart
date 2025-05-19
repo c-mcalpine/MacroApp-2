@@ -104,14 +104,35 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
 
       // Create a URL scheme for Notes app with title
       final noteTitle = '$recipeName - Grocery List';
-      final notesUrl = 'notes://create?title=${Uri.encodeComponent(noteTitle)}&text=${Uri.encodeComponent(noteContent)}';
+      final notesUrl = Uri(
+        scheme: 'mobilenotes',
+        host: 'create',
+        queryParameters: {
+          'title': noteTitle,
+          'text': noteContent,
+        },
+      ).toString();
       
-      if (await canLaunch(notesUrl)) {
-        await launch(notesUrl);
+      if (await canLaunchUrl(Uri.parse(notesUrl))) {
+        await launchUrl(Uri.parse(notesUrl));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open Notes app')),
-        );
+        // Try alternative URL scheme
+        final alternativeUrl = Uri(
+          scheme: 'notes',
+          host: 'create',
+          queryParameters: {
+            'title': noteTitle,
+            'text': noteContent,
+          },
+        ).toString();
+        
+        if (await canLaunchUrl(Uri.parse(alternativeUrl))) {
+          await launchUrl(Uri.parse(alternativeUrl));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not open Notes app')),
+          );
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
