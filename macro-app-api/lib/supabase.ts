@@ -11,101 +11,135 @@ const supabase = createClient(
 
 // Helper functions for common Supabase operations
 export async function getUserByPhone(phone: string) {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('phone_number', phone)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('phone_number', phone)
+      .single();
 
-  if (error) {
-    console.error('Error fetching user:', error);
+    if (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getUserByPhone:', error);
     return null;
   }
-
-  return data;
 }
 
 export async function createUser(phone: string, username: string) {
-  const { data, error } = await supabase
-    .from('users')
-    .insert([
-      { phone_number: phone, name: username }
-    ])
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .insert([
+        { 
+          phone_number: phone, 
+          username: username,
+          created_at: new Date().toISOString()
+        }
+      ])
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Error creating user:', error);
+    if (error) {
+      console.error('Error creating user:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in createUser:', error);
     return null;
   }
-
-  return data;
 }
 
 export async function updateUsername(phone: string, username: string) {
-  const { data, error } = await supabase
-    .from('users')
-    .update({ name: username })
-    .eq('phone_number', phone)
-    .select()
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .update({ username: username })
+      .eq('phone_number', phone)
+      .select()
+      .single();
 
-  if (error) {
-    console.error('Error updating username:', error);
-    return { success: false, error: error.message };
+    if (error) {
+      console.error('Error updating username:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error in updateUsername:', error);
+    return { success: false, error: 'Failed to update username' };
   }
-
-  return { success: true, data };
 }
 
 export async function getRecipeById(id: string) {
-  const { data, error } = await supabase
-    .from('recipes')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('recipes')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  if (error) {
-    console.error('Error fetching recipe:', error);
+    if (error) {
+      console.error('Error fetching recipe:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getRecipeById:', error);
     return null;
   }
-
-  return data;
 }
 
 export async function getAllRecipes() {
-  const { data, error } = await supabase
-    .from('recipes')
-    .select('*')
-    .order('created_at', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('recipes')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching recipes:', error);
+    if (error) {
+      console.error('Error fetching recipes:', error);
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in getAllRecipes:', error);
     return [];
   }
-
-  return data;
 }
 
 export async function searchRecipes(query: string, filters: Record<string, any> = {}) {
-  let queryBuilder = supabase
-    .from('recipes')
-    .select('*')
-    .textSearch('name', query);
+  try {
+    let queryBuilder = supabase
+      .from('recipes')
+      .select('*')
+      .textSearch('name', query);
 
-  // Apply filters
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined) {
-      queryBuilder = queryBuilder.gte(key, value);
+    // Apply filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined) {
+        queryBuilder = queryBuilder.gte(key, value);
+      }
+    });
+
+    const { data, error } = await queryBuilder;
+
+    if (error) {
+      console.error('Error searching recipes:', error);
+      return [];
     }
-  });
 
-  const { data, error } = await queryBuilder;
-
-  if (error) {
-    console.error('Error searching recipes:', error);
+    return data;
+  } catch (error) {
+    console.error('Error in searchRecipes:', error);
     return [];
   }
-
-  return data;
 } 
