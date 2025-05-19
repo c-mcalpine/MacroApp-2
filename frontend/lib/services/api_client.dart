@@ -2,16 +2,57 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiClient {
-  static const String baseUrl = 'https://your-vercel-domain.vercel.app/api';
+  static const String baseUrl = 'https://macro-app-2.vercel.app/api';
+
+  static Future<Map<String, dynamic>> testApi() async {
+    try {
+      print('Testing API connection...');
+      final response = await http.get(
+        Uri.parse('$baseUrl/test'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+
+      print('Test response status code: ${response.statusCode}');
+      print('Test response body: ${response.body}');
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error testing API: $e');
+      rethrow;
+    }
+  }
 
   static Future<Map<String, dynamic>> sendOTP(String phoneNumber) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/send-otp'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'phone_number': phoneNumber}),
-    );
+    try {
+      print('Sending OTP request to: $baseUrl/auth/send-otp');
+      print('Phone number: $phoneNumber');
+      
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/send-otp'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'phone_number': phoneNumber}),
+      );
 
-    return jsonDecode(response.body);
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to send OTP: ${response.statusCode} - ${response.body}');
+      }
+
+      return jsonDecode(response.body);
+    } catch (e) {
+      print('Error in sendOTP: $e');
+      if (e is http.ClientException) {
+        print('Network error details: ${e.message}');
+      }
+      rethrow;
+    }
   }
 
   static Future<Map<String, dynamic>> verifyOTP(
