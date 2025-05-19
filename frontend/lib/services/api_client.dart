@@ -95,10 +95,23 @@ class ApiClient {
       print('Verify OTP response body: ${response.body}');
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to verify OTP: ${response.statusCode} - ${response.body}');
+        final errorData = jsonDecode(response.body);
+        throw Exception('Failed to verify OTP: ${errorData['error']}');
       }
 
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      
+      // Ensure all required fields are present
+      if (!data.containsKey('success') || !data.containsKey('token') || !data.containsKey('user_id')) {
+        throw Exception('Invalid response format from server');
+      }
+
+      // Ensure user_name is present, use a default if not
+      if (!data.containsKey('user_name')) {
+        data['user_name'] = username ?? 'User';
+      }
+
+      return data;
     } catch (e) {
       print('Error in verifyOTP: $e');
       if (e is http.ClientException) {

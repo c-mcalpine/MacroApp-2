@@ -26,6 +26,7 @@ export default async function handler(
 
   try {
     const { phone_number, otp, username } = req.body;
+    console.log('Verifying OTP for:', { phone_number, otp, username });
 
     if (!phone_number || !otp) {
       return res.status(400).json({
@@ -35,17 +36,26 @@ export default async function handler(
     }
 
     const result = await authenticateUser(phone_number, otp, username);
+    console.log('Authentication result:', result);
 
     if (!result.success) {
       return res.status(401).json(result);
     }
 
-    return res.status(200).json(result);
+    // Ensure all required fields are present in the response
+    const response = {
+      success: true,
+      token: result.token,
+      user_id: result.user_id,
+      user_name: result.user_name || username || 'User'
+    };
+
+    return res.status(200).json(response);
   } catch (error) {
     console.error('Error verifying OTP:', error);
     return res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: error instanceof Error ? error.message : 'Internal server error'
     });
   }
 } 
