@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiClient {
-  static const String baseUrl = 'https://macro-app-2.vercel.app/api';
+  static final String baseUrl = dotenv.env['API_BASE_URL']!;
 
   static Future<Map<String, dynamic>> testApi() async {
     try {
