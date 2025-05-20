@@ -16,6 +16,9 @@ void main() async {
   
   // Load environment variables
   await dotenv.load(fileName: ".env");
+  print('Environment variables loaded:');
+  print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
+  print('All env vars: ${dotenv.env}');
   
   // Initialize app configuration
   final appConfig = AppConfig();

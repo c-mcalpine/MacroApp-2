@@ -41,7 +41,7 @@ class SupabaseService {
     }
     
     try {
-      final response = await _client!.from('users').select().eq('phone', phoneNumber).single();
+      final response = await _client!.from('users').select().eq('phone_number', phoneNumber).single();
       return response;
     } catch (e) {
       if (e.toString().contains('relation "users" does not exist')) {
@@ -50,7 +50,7 @@ class SupabaseService {
         print('''
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  phone TEXT UNIQUE NOT NULL,
+  phone_number TEXT UNIQUE NOT NULL,
   name TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -70,7 +70,7 @@ CREATE TABLE users (
     
     try {
       final response = await _client!.from('users').insert({
-        'phone': phoneNumber,
+        'phone_number': phoneNumber,
         'name': name,
       }).select().single();
       
@@ -84,7 +84,7 @@ CREATE TABLE users (
         print('''
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  phone TEXT UNIQUE NOT NULL,
+  phone_number TEXT UNIQUE NOT NULL,
   name TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -105,7 +105,7 @@ CREATE TABLE users (
     try {
       final response = await _client!.from('users')
           .update({'name': newName})
-          .eq('phone', phoneNumber)
+          .eq('phone_number', phoneNumber)
           .select()
           .single();
       
@@ -117,7 +117,7 @@ CREATE TABLE users (
         print('''
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  phone TEXT UNIQUE NOT NULL,
+  phone_number TEXT UNIQUE NOT NULL,
   name TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

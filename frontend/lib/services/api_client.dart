@@ -5,8 +5,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class ApiClient {
   static final String baseUrl = dotenv.env['API_BASE_URL']!;
 
+  static void _logEnvVars() {
+    print('ApiClient initialization:');
+    print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
+    print('All env vars: ${dotenv.env}');
+  }
+
   static Future<Map<String, dynamic>> testApi() async {
     try {
+      _logEnvVars(); // Log when testApi is called
       print('Testing API connection...');
       final response = await http.get(
         Uri.parse('$baseUrl/test'),

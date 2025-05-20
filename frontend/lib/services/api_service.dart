@@ -6,14 +6,21 @@ import 'auth_service.dart';
 class ApiService {
   static final String baseUrl = dotenv.env['API_BASE_URL']!;
 
+  static void _logEnvVars() {
+    print('ApiService initialization:');
+    print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
+    print('All env vars: ${dotenv.env}');
+  }
+
   // Helper method to get authenticated headers
   static Future<Map<String, String>> _getHeaders() async {
+    _logEnvVars(); // Log when headers are requested
     return await AuthService.getAuthHeaders();
   }
 
   static Future<List<dynamic>> getRecipes() async {
     final headers = await _getHeaders();
-    final response = await http.get(Uri.parse('$baseUrl/recipes'), headers: headers);
+    final response = await http.get(Uri.parse('$baseUrl/api/recipes'), headers: headers);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -23,7 +30,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getRecipeDetails(int recipeId) async {
     final headers = await _getHeaders();
-    final response = await http.get(Uri.parse('$baseUrl/recipe/$recipeId'), headers: headers);
+    final response = await http.get(Uri.parse('$baseUrl/api/recipe/$recipeId'), headers: headers);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -36,7 +43,7 @@ class ApiService {
       final headers = await _getHeaders();
       print("Sending recipeId: $recipeId with message: $message"); // Log recipeId and message
       final response = await http.post(
-        Uri.parse('$baseUrl/recipe/$recipeId/chat'),
+        Uri.parse('$baseUrl/api/recipe/$recipeId/chat'),
         headers: headers,
         body: json.encode({"message": message}),
       );
@@ -57,7 +64,7 @@ class ApiService {
   }
 
   static Future<String?> getInstacartShoppingList(List<dynamic> ingredients) async {
-    final url = Uri.parse("$baseUrl/instacart/shopping-list"); // Remove redundant '/api' prefix
+    final url = Uri.parse("$baseUrl/api/instacart/shopping-list");
     try {
       final headers = await _getHeaders();
       final response = await http.post(
@@ -81,7 +88,7 @@ class ApiService {
 
   static Future<List<dynamic>> searchRecipes(String query) async {
     final headers = await _getHeaders();
-    final response = await http.get(Uri.parse('$baseUrl/recipes/search?q=$query'), headers: headers);
+    final response = await http.get(Uri.parse('$baseUrl/api/recipes/search?q=$query'), headers: headers);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -93,7 +100,7 @@ class ApiService {
   static Future<List<dynamic>> getUserHeartedRecipes() async {
     final headers = await _getHeaders();
     final userId = await AuthService.getUserId();
-    final response = await http.get(Uri.parse('$baseUrl/users/$userId/hearted-recipes'), headers: headers);
+    final response = await http.get(Uri.parse('$baseUrl/api/users/$userId/hearted-recipes'), headers: headers);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -105,7 +112,7 @@ class ApiService {
     final headers = await _getHeaders();
     final userId = await AuthService.getUserId();
     final response = await http.post(
-      Uri.parse('$baseUrl/users/$userId/heart-recipe'),
+      Uri.parse('$baseUrl/api/users/$userId/heart-recipe'),
       headers: headers,
       body: jsonEncode({"recipe_id": recipeId}),
     );
@@ -116,7 +123,7 @@ class ApiService {
     final headers = await _getHeaders();
     final userId = await AuthService.getUserId();
     final response = await http.post(
-      Uri.parse('$baseUrl/users/$userId/unheart-recipe'),
+      Uri.parse('$baseUrl/api/users/$userId/unheart-recipe'),
       headers: headers,
       body: jsonEncode({"recipe_id": recipeId}),
     );
@@ -126,7 +133,7 @@ class ApiService {
   static Future<List<dynamic>> getUserCustomLists() async {
     final headers = await _getHeaders();
     final userId = await AuthService.getUserId();
-    final response = await http.get(Uri.parse('$baseUrl/users/$userId/custom-lists'), headers: headers);
+    final response = await http.get(Uri.parse('$baseUrl/api/users/$userId/custom-lists'), headers: headers);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
@@ -138,7 +145,7 @@ class ApiService {
     final headers = await _getHeaders();
     final userId = await AuthService.getUserId();
     final response = await http.post(
-      Uri.parse('$baseUrl/users/$userId/custom-lists'),
+      Uri.parse('$baseUrl/api/users/$userId/custom-lists'),
       headers: headers,
       body: jsonEncode({"list_name": listName}),
     );
@@ -149,7 +156,7 @@ class ApiService {
     final headers = await _getHeaders();
     final userId = await AuthService.getUserId();
     final response = await http.post(
-      Uri.parse('$baseUrl/users/$userId/custom-lists/$listId/add-recipe'),
+      Uri.parse('$baseUrl/api/users/$userId/custom-lists/$listId/add-recipe'),
       headers: headers,
       body: jsonEncode({"recipe_id": recipeId}),
     );

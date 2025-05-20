@@ -1,27 +1,10 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import twilio from 'twilio';
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
-
-if (!accountSid || !authToken || !verifyServiceSid) {
-  throw new Error('Missing Twilio credentials');
-}
-
-const client = twilio(accountSid, authToken);
+import { NextApiRequest, NextApiResponse } from 'next';
+import { sendOTP } from '../../../lib/auth';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log('Received request:', {
-    method: req.method,
-    headers: req.headers,
-    body: req.body,
-    url: req.url
-  });
-
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -33,44 +16,56 @@ export default async function handler(
 
   // Handle preflight request
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS request');
     res.status(200).end();
     return;
   }
 
-  // Only allow POST requests
   if (req.method !== 'POST') {
-    console.log('Method not allowed:', req.method);
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { phone_number } = req.body;
-    console.log('Received phone number:', phone_number);
+    console.log('Received OTP request:', {
+      method: req.method,
+      headers: req.headers,
+      body: req.body
+    });
 
-    if (!phone_number || typeof phone_number !== 'string') {
-      console.log('Invalid phone number:', phone_number);
-      res.status(400).json({ error: 'Valid phone number is required' });
-      return;
+    const { phone_number } = req.body;
+    console.log('Phone number:', phone_number);
+
+    if (!phone_number) {
+      console.log('Missing phone number');
+      return res.status(400).json({
+        success: false,
+        error: 'Phone number is required'
+      });
     }
 
-    // Format phone number for Twilio (ensure it starts with +)
+    // Format phone number to ensure it starts with +
     const formattedPhone = phone_number.startsWith('+') ? phone_number : `+${phone_number}`;
-    console.log('Sending OTP to:', formattedPhone);
+    console.log('Formatted phone number:', formattedPhone);
 
-    const verification = await client.verify.v2
-      .services(verifyServiceSid as string)
-      .verifications.create({ to: formattedPhone, channel: 'sms' });
+    const result = await sendOTP(formattedPhone);
+    console.log('OTP send result:', result);
 
-    console.log('Twilio verification response:', verification);
-    res.status(200).json({ success: true });
+    if (!result.success) {
+      console.log('Failed to send OTP:', result.error);
+      return res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      status: 'pending'
+    });
   } catch (error) {
-    console.error('Error sending OTP:', error);
-    // Send more detailed error information
-    res.status(500).json({ 
-      error: 'Failed to send OTP',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error in send-otp:', error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Internal server error'
     });
   }
 } 

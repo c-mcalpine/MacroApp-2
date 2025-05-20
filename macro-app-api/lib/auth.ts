@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { getUserByPhone, createUser } from './supabase';
+import twilio from 'twilio';
 
 if (!process.env.JWT_SECRET) {
   throw new Error('Missing JWT_SECRET');
@@ -33,6 +34,42 @@ export function verifyToken(token: string): TokenPayload {
   }
 }
 
+export async function sendOTP(phone: string) {
+  try {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+
+    if (!accountSid || !authToken || !verifyServiceSid) {
+      throw new Error('Missing Twilio credentials');
+    }
+
+    console.log('Sending OTP with Twilio credentials:', {
+      accountSid: accountSid ? 'present' : 'missing',
+      authToken: authToken ? 'present' : 'missing',
+      verifyServiceSid: verifyServiceSid ? 'present' : 'missing'
+    });
+
+    const client = twilio(accountSid, authToken);
+    const verification = await client.verify.v2
+      .services(verifyServiceSid)
+      .verifications.create({ to: phone, channel: 'sms' });
+
+    console.log('Twilio verification response:', verification);
+
+    return {
+      success: true,
+      status: verification.status
+    };
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to send OTP'
+    };
+  }
+}
+
 export async function authenticateUser(phone: string, otp: string, username?: string) {
   try {
     // Verify OTP with Twilio
@@ -44,7 +81,7 @@ export async function authenticateUser(phone: string, otp: string, username?: st
       throw new Error('Missing Twilio credentials');
     }
 
-    const client = require('twilio')(accountSid, authToken);
+    const client = twilio(accountSid, authToken);
     const verification = await client.verify.v2
       .services(verifyServiceSid)
       .verificationChecks.create({ to: phone, code: otp });
@@ -64,13 +101,13 @@ export async function authenticateUser(phone: string, otp: string, username?: st
     }
 
     // Generate JWT token
-    const token = generateToken(phone, user.name);
+    const token = generateToken(phone, user.username);
 
     return {
       success: true,
       token,
       user_id: phone,
-      user_name: user.name
+      user_name: user.username
     };
   } catch (error) {
     console.error('Authentication error:', error);
