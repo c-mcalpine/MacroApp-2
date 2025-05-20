@@ -114,7 +114,7 @@ export async function getAllRecipes() {
         recipe_diet_plan_join_table(*),
         recipe_tags_join_table(*)
       `)
-      .order('created_at', { ascending: false });
+      .order('created_date', { ascending: false });
 
     if (error) {
       console.error('Error fetching recipes:', error);
