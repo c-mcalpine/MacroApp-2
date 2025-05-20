@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
 import 'package:flutter/services.dart';
+import '../widgets/common/network_image_widget.dart';
 
 class ExploreRecipesScreen extends StatefulWidget {
   final Function(int) onRecipeSelected; // Callback for recipe selection
@@ -641,29 +642,35 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                         child: Container(
                           width: 200,
                           decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(promos[index]['image']!),
-                              fit: BoxFit.cover,
-                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Container(
-                            padding: EdgeInsets.all(8),
-                            alignment: Alignment.bottomLeft,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                          child: Stack(
+                            children: [
+                              NetworkImageWidget(
+                                imageUrl: promos[index]['image']!,
+                                fit: BoxFit.cover,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                            child: Text(
-                              promos[index]['title']!,
-                              style: GoogleFonts.lexend(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                              Container(
+                                padding: EdgeInsets.all(8),
+                                alignment: Alignment.bottomLeft,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                                  ),
+                                ),
+                                child: Text(
+                                  promos[index]['title']!,
+                                  style: GoogleFonts.lexend(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
@@ -769,10 +776,12 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                               borderRadius: BorderRadius.circular(12),
                                               child: Container(
                                                 decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    image: NetworkImage(recipe['image_url'] ?? 'https://via.placeholder.com/150'),
-                                                    fit: BoxFit.cover,
-                                                  ),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: NetworkImageWidget(
+                                                  imageUrl: recipe['image_url'] ?? 'https://via.placeholder.com/150',
+                                                  fit: BoxFit.cover,
+                                                  borderRadius: BorderRadius.circular(12),
                                                 ),
                                               ),
                                             ),
@@ -1107,10 +1116,12 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(recipe['image_url'] ?? 'https://via.placeholder.com/150'),
-                                      fit: BoxFit.cover,
-                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: NetworkImageWidget(
+                                    imageUrl: recipe['image_url'] ?? 'https://via.placeholder.com/150',
+                                    fit: BoxFit.cover,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
                               ),

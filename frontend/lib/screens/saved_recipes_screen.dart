@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/screens/list_details_screen.dart';
+import '../widgets/common/network_image_widget.dart';
 
 class SavedRecipesScreen extends StatefulWidget {
   final List<Map<String, dynamic>> heartedRecipes; // Pass hearted recipes
@@ -83,10 +84,11 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
-                                      image: DecorationImage(
-                                        image: NetworkImage(recipe['image_url']),
-                                        fit: BoxFit.cover,
-                                      ),
+                                    ),
+                                    child: NetworkImageWidget(
+                                      imageUrl: recipe['image_url'],
+                                      fit: BoxFit.cover,
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                 ),

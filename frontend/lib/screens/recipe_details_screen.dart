@@ -6,6 +6,7 @@ import 'package:frontend/services/auth_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:frontend/screens/chatbot_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../widgets/common/network_image_widget.dart';
 
 class RecipeDetailsScreen extends StatefulWidget {
   final int recipeId;
@@ -280,35 +281,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: ClipRRect(
+                          child: NetworkImageWidget(
+                            imageUrl: recipe['recipe']['image_url'] ?? '',
+                            fit: BoxFit.cover,
                             borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              recipe['recipe']['image_url'] ?? '',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: Colors.grey[800],
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      color: Colors.white,
-                                      size: 48,
-                                    ),
-                                  ),
-                                );
-                              },
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            (loadingProgress.expectedTotalBytes ?? 1)
-                                        : null,
-                                  ),
-                                );
-                              },
-                            ),
                           ),
                         ),
                         // Title & Tags Content

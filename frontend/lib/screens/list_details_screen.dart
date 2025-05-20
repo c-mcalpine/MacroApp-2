@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../widgets/common/network_image_widget.dart';
 
 class ListDetailsScreen extends StatelessWidget {
   final String listName;
@@ -40,7 +41,15 @@ class ListDetailsScreen extends StatelessWidget {
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: NetworkImage(recipe['image_url']),
+                      radius: 25,
+                      child: ClipOval(
+                        child: NetworkImageWidget(
+                          imageUrl: recipe['image_url'],
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     title: Text(
                       recipe['name'],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
+import '../widgets/common/network_image_widget.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -344,12 +345,10 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Recipe Image
-            Image.network(
-              recipe['image_url'] ?? 'https://via.placeholder.com/150',
+            NetworkImageWidget(
+              imageUrl: recipe['image_url'] ?? 'https://via.placeholder.com/150',
               fit: BoxFit.cover,
             ),
-            // Gradient Overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

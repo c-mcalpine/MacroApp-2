@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../common/network_image_widget.dart';
 
 class RecipeHeader extends StatelessWidget {
   final Map<String, dynamic> recipe;
@@ -14,13 +15,10 @@ class RecipeHeader extends StatelessWidget {
           width: double.infinity,
           height: 200,
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: ClipRRect(
+          child: NetworkImageWidget(
+            imageUrl: recipe['image_url'] ?? '',
+            fit: BoxFit.cover,
             borderRadius: BorderRadius.circular(16),
-            child: Image.network(
-              recipe['image_url'] ?? '',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(color: Colors.grey[800], child: Icon(Icons.broken_image, color: Colors.white, size: 48)),
-            ),
           ),
         ),
         Positioned.fill(
