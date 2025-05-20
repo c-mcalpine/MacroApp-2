@@ -10,6 +10,7 @@ import 'services/auth_service.dart';
 import 'services/supabase_service.dart';
 import 'providers/auth_provider.dart';
 import 'screens/login_screen.dart';
+import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +33,8 @@ void main() async {
   
   // Initialize SupabaseService
   await SupabaseService.initialize();
+  
+  ApiService.init(); // Initialize ApiService
   
   runApp(MyApp());
 }

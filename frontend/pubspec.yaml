@@ -37,7 +37,7 @@ dependencies:
 
   http: ^1.1.0  # API requests
   provider: ^6.0.5  # State management
-  google_fonts: ^5.1.0  # Custom fonts
+  google_fonts: ^6.1.0  # Custom fonts
   flutter_dotenv: ^5.1.0  # Environment variables
   lottie: ^2.6.0
   cached_network_image: ^3.2.3
@@ -47,7 +47,7 @@ dependencies:
   fl_chart: ^0.65.0  # For charts and graphs
   url_launcher: ^6.2.2  # For launching URLs
   supabase_flutter: ^1.10.25
-  flutter_secure_storage: ^8.0.0
+  flutter_secure_storage: ^9.0.0
   jwt_decoder: ^2.0.1
   dio: ^5.4.0
 
