@@ -81,8 +81,14 @@ export async function getRecipeById(id: string) {
   try {
     const { data, error } = await supabase
       .from('recipes')
-      .select('*')
-      .eq('id', id)
+      .select(`
+        *,
+        recipe_ingredients_join_table(*),
+        recipe_nutrition_join_table(*),
+        recipe_diet_plan_join_table(*),
+        recipe_tags_join_table(*)
+      `)
+      .eq('recipe_id', id)
       .single();
 
     if (error) {
@@ -101,7 +107,13 @@ export async function getAllRecipes() {
   try {
     const { data, error } = await supabase
       .from('recipes')
-      .select('*, recipe_ingredients_join_table(*), recipe_nutrition_join_table(*), recipe_diet_plan_join_table(*), recipe_tags_join_table(*)')
+      .select(`
+        *,
+        recipe_ingredients_join_table(*),
+        recipe_nutrition_join_table(*),
+        recipe_diet_plan_join_table(*),
+        recipe_tags_join_table(*)
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {
