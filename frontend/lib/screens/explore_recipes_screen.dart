@@ -69,7 +69,12 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
       duration: Duration(milliseconds: 300),
     );
     _opacityAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-    recipes = ApiService.getRecipes();
+    
+    print('Initializing recipes...');
+    recipes = ApiService.getRecipes().catchError((error) {
+      print('Error loading recipes: $error');
+      return [];
+    });
   }
 
   @override

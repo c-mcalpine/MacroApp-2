@@ -101,7 +101,7 @@ export async function getAllRecipes() {
   try {
     const { data, error } = await supabase
       .from('recipes')
-      .select('*')
+      .select('*, recipe_ingredients_join_table(*), recipe_nutrition_join_table(*), recipe_diet_plan_join_table(*), recipe_tags_join_table(*)')
       .order('created_at', { ascending: false });
 
     if (error) {
