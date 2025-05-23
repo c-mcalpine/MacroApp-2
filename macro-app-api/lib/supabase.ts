@@ -83,10 +83,22 @@ export async function getRecipeById(id: string) {
       .from('recipes')
       .select(`
         *,
-        recipe_ingredients_join_table(*),
-        recipe_nutrition_join_table(*),
-        recipe_diet_plan_join_table(*),
-        recipe_tags_join_table(*)
+        recipe_ingredients_join_table(
+          *,
+          ingredients_library(*)
+        ),
+        recipe_nutrition_join_table(
+          *,
+          nutrient_library(*)
+        ),
+        recipe_diet_plan_join_table(
+          *,
+          diet_plans(*)
+        ),
+        recipe_tags_join_table(
+          *,
+          tags_library(*)
+        )
       `)
       .eq('recipe_id', id)
       .single();

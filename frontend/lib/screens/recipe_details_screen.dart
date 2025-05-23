@@ -264,7 +264,13 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               }
 
               var recipe = snapshot.data!;
-              var recipeDetails = recipe['recipe'];
+              var recipeDetails = recipe['recipe'] ?? {};
+
+              // Extract join table data with null safety
+              final ingredients = recipe['recipe_ingredients_join_table'] as List<dynamic>? ?? [];
+              final nutrition = recipe['recipe_nutrition_join_table'] as List<dynamic>? ?? [];
+              final dietPlans = recipe['recipe_diet_plan_join_table'] as List<dynamic>? ?? [];
+              final tags = recipe['recipe_tags_join_table'] as List<dynamic>? ?? [];
 
               return SingleChildScrollView(
                 padding: EdgeInsets.all(16),
@@ -282,7 +288,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: NetworkImageWidget(
-                            imageUrl: recipe['recipe']['image_url'] ?? '',
+                            imageUrl: recipeDetails['image_url'] ?? '',
                             fit: BoxFit.cover,
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -295,7 +301,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             children: [
                               // Recipe Title
                               Text(
-                                recipe['recipe']['name'] ?? "Unknown Recipe",
+                                recipeDetails['name'] ?? "Unknown Recipe",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lexend(
                                   fontSize: 28,
@@ -316,7 +322,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                 spacing: 8,
                                 runSpacing: 8,
                                 alignment: WrapAlignment.center,
-                                children: (recipe['tags'] as List<dynamic>? ?? []).map((tag) {
+                                children: tags.map((tag) {
                                   return Chip(
                                     backgroundColor: _getTagColor(tag['tag_name'] ?? "Unknown"),
                                     label: Text(
@@ -381,7 +387,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         ),
                         // Instacart Integration
                         ElevatedButton.icon(
-                          onPressed: () => _shopRecipe(recipe), // Pass the resolved recipe directly
+                          onPressed: () => _shopRecipe(recipe),
                           icon: Icon(Icons.shopping_cart_outlined, color: Colors.white),
                           label: Text(
                             "Shop",
@@ -403,7 +409,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             style: GoogleFonts.lexend(color: Colors.white),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFD700), // iOS Notes app yellow
+                            backgroundColor: Color(0xFFFFD700),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -425,13 +431,13 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             color: Colors.white,
                           ),
                         ),
-                        SizedBox(height: 4), // Minimal spacing
+                        SizedBox(height: 4),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (() {
                             // Group ingredients by section_name
                             Map<String, List<dynamic>> groupedIngredients = {};
-                            for (var ingredient in recipe['ingredients'] as List<dynamic>) {
+                            for (var ingredient in ingredients) {
                               String sectionName = ingredient['section_name'] ?? "General";
                               if (!groupedIngredients.containsKey(sectionName)) {
                                 groupedIngredients[sectionName] = [];
@@ -443,36 +449,34 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             return groupedIngredients.entries.map((entry) {
                               return Card(
                                 color: Colors.white10,
-                                margin: EdgeInsets.symmetric(vertical: 4.0), // Minimal margin
+                                margin: EdgeInsets.symmetric(vertical: 4.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(8.0), // Compact padding
+                                  padding: EdgeInsets.all(8.0),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      // Section Header
                                       Text(
                                         entry.key,
                                         style: GoogleFonts.lexend(
-                                          fontSize: 18, // Slightly smaller font size
+                                          fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
                                       ),
-                                      SizedBox(height: 4), // Minimal spacing
-                                      // Ingredients in Two Columns
+                                      SizedBox(height: 4),
                                       Wrap(
-                                        spacing: 16, // Horizontal spacing between columns
-                                        runSpacing: 4, // Vertical spacing between rows
+                                        spacing: 16,
+                                        runSpacing: 4,
                                         children: entry.value.map((ingredient) {
                                           return SizedBox(
-                                            width: (MediaQuery.of(context).size.width - 64) / 2, // Dynamically adjust width for two columns
+                                            width: (MediaQuery.of(context).size.width - 64) / 2,
                                             child: Text(
-                                              "• ${ingredient['amount']} ${ingredient['unit']} ${ingredient['name']}",
+                                              "• ${ingredient['amount'] ?? ''} ${ingredient['unit'] ?? ''} ${ingredient['name'] ?? ''}",
                                               style: GoogleFonts.lexend(
-                                                fontSize: 14, // Compact font size
+                                                fontSize: 14,
                                                 color: Colors.white70,
                                               ),
                                             ),
@@ -486,7 +490,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             }).toList();
                           })(),
                         ),
-                        SizedBox(height: 8), // Minimal spacing
+                        SizedBox(height: 8),
                     
                         // Instructions Section
                         Text(
@@ -500,12 +504,12 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         SizedBox(height: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: (recipe['instructions'] as List<dynamic>).map((step) {
+                          children: (recipeDetails['instructions'] as List<dynamic>? ?? []).map((step) {
                             return _CollapsibleInstructionCard(
-                              stepNumber: step['step_number'],
-                              stepHeader: step['step_header'],
+                              stepNumber: step['step_number'] ?? 0,
+                              stepHeader: step['step_header'] ?? '',
                               stepDuration: step['step_duration'],
-                              instructionText: step['instruction_text'],
+                              instructionText: step['instruction_text'] ?? '',
                             );
                           }).toList(),
                         ),
@@ -544,7 +548,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                     height: 120,
                                     child: Builder(
                                       builder: (context) {
-                                        var pieChartSections = _getPieChartSections(recipe, _touchedIndex);
+                                        var pieChartSections = _getPieChartSections(nutrition, _touchedIndex);
                                         if (pieChartSections.isEmpty) {
                                           return Center(
                                             child: Text(
@@ -598,11 +602,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                       ),
                                       SizedBox(height: 8),
                                       Text(
-                                        _getCaloriesPerGramText(recipe),
+                                        _getCaloriesPerGramText(nutrition),
                                         style: GoogleFonts.lexend(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
-                                          color: _getCaloriesPerGramColor(recipe),
+                                          color: _getCaloriesPerGramColor(nutrition),
                                         ),
                                       ),
                                     ],
@@ -627,9 +631,9 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                 crossAxisSpacing: 8,
                                 mainAxisSpacing: 8,
                               ),
-                              itemCount: recipe['nutrition'].length,
+                              itemCount: nutrition.length,
                               itemBuilder: (context, index) {
-                                var nutrient = recipe['nutrition'][index];
+                                var nutrient = nutrition[index];
                                 return Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -670,7 +674,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                     SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: (recipe['meal_prep_tips'] as List<dynamic>).map((tip) {
+                      children: (recipeDetails['meal_prep_tips'] as List<dynamic>? ?? []).map((tip) {
                         return Card(
                           color: Colors.white10,
                           margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -682,14 +686,12 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Icon for Storage Type
                                 Icon(
                                   _getStorageIcon(tip['storage_type']),
                                   color: Colors.white,
                                   size: 32,
                                 ),
                                 SizedBox(width: 16),
-                                // Tip Details
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1095,10 +1097,10 @@ Color _getTagColor(String tagName) {
 }
 
 // Function to get pie chart sections
-List<PieChartSectionData> _getPieChartSections(Map<String, dynamic> recipe, int touchedIndex) {
-  double protein = _getNutrientValue(recipe['nutrition'], "protein");
-  double carbs = _getNutrientValue(recipe['nutrition'], "carbs");
-  double fat = _getNutrientValue(recipe['nutrition'], "fat");
+List<PieChartSectionData> _getPieChartSections(List<dynamic> nutrition, int touchedIndex) {
+  double protein = _getNutrientValue(nutrition, "protein");
+  double carbs = _getNutrientValue(nutrition, "carbs");
+  double fat = _getNutrientValue(nutrition, "fat");
   double total = protein + carbs + fat;
 
   if (total <= 0) return [];
@@ -1147,9 +1149,9 @@ List<PieChartSectionData> _getPieChartSections(Map<String, dynamic> recipe, int 
 }
 
 // Function to calculate calories per gram of protein
-String _getCaloriesPerGramText(Map<String, dynamic> recipe) {
-  double calories = _getNutrientValue(recipe['nutrition'], "calories");
-  double protein = _getNutrientValue(recipe['nutrition'], "protein");
+String _getCaloriesPerGramText(List<dynamic> nutrition) {
+  double calories = _getNutrientValue(nutrition, "calories");
+  double protein = _getNutrientValue(nutrition, "protein");
 
   if (protein <= 0) return "No protein data available";
 
@@ -1165,9 +1167,9 @@ String _getCaloriesPerGramText(Map<String, dynamic> recipe) {
 }
 
 // Function to get color for calories per gram indicator
-Color _getCaloriesPerGramColor(Map<String, dynamic> recipe) {
-  double calories = _getNutrientValue(recipe['nutrition'], "calories");
-  double protein = _getNutrientValue(recipe['nutrition'], "protein");
+Color _getCaloriesPerGramColor(List<dynamic> nutrition) {
+  double calories = _getNutrientValue(nutrition, "calories");
+  double protein = _getNutrientValue(nutrition, "protein");
   double calPerGram = protein > 0 ? calories / protein : 0;
 
   if (calPerGram < 9) {
