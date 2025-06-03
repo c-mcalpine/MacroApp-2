@@ -10,12 +10,26 @@ def search_recipes():
     min_protein = request.args.get("min_protein", type=float)
     max_carbs = request.args.get("max_carbs", type=float)
 
+    # Build nutrient lookup similar to the filter_recipes endpoint
+    nutrition_map = {}
+    for rec in data_loader.nutrition_df:
+        rid = rec.get("recipe_id")
+        name = rec.get("nutrient_name", "").lower()
+        value = float(rec.get("value", 0))
+        nutrition_map.setdefault(rid, {})[name] = value
+
     filtered_recipes = []
-    for _, row in data_loader.nutrition.iterrows():
-        if min_protein and row["protein_g"] < min_protein:
+    for rid, nutrients in nutrition_map.items():
+        protein = nutrients.get("protein")
+        carbs = nutrients.get("carbs")
+
+        if min_protein and (protein is None or protein < min_protein):
             continue
-        if max_carbs and row["carbs_g"] > max_carbs:
+        if max_carbs and (carbs is None or carbs > max_carbs):
             continue
-        filtered_recipes.append(row.to_dict())
+
+        recipe_data = {"recipe_id": rid}
+        recipe_data.update(nutrients)
+        filtered_recipes.append(recipe_data)
 
     return jsonify(filtered_recipes)
