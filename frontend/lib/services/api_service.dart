@@ -212,12 +212,16 @@ class ApiService {
   static Future<String?> getInstacartShoppingList(List<dynamic> ingredients) async {
     try {
       final headers = await _getHeaders();
+      final token = await AuthService.getToken();
       
       if (kIsWeb) {
         final response = await _httpClient.post(
           Uri.parse('$baseUrl/api/instacart/shopping-list'),
           headers: headers,
-          body: json.encode({"ingredients": ingredients}),
+          body: json.encode({
+            "ingredients": ingredients,
+            if (token != null) "token": token,
+          }),
         );
         
         if (response.statusCode == 200) {
@@ -234,7 +238,10 @@ class ApiService {
             headers: headers,
             validateStatus: (status) => status! < 500,
           ),
-          data: {"ingredients": ingredients},
+          data: {
+            "ingredients": ingredients,
+            if (token != null) "token": token,
+          },
         );
         
         if (response.statusCode == 200) {
