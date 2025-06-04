@@ -103,37 +103,27 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
         return '☐ $amount $unit $name';
       }).join('\n');
 
-      // Create a URL scheme for Notes app with title
+      // Create a URL scheme for Notes app using the x-callback-url API
       final noteTitle = '$recipeName - Grocery List';
-      final notesUrl = Uri(
+      final notesUri = Uri(
         scheme: 'mobilenotes',
-        host: 'create',
+        host: 'x-callback-url',
+        path: 'create',
         queryParameters: {
           'title': noteTitle,
           'text': noteContent,
         },
-      ).toString();
-      
-      if (await canLaunchUrl(Uri.parse(notesUrl))) {
-        await launchUrl(Uri.parse(notesUrl));
+      );
+
+      if (await canLaunchUrl(notesUri)) {
+        await launchUrl(notesUri);
       } else {
-        // Try alternative URL scheme
-        final alternativeUrl = Uri(
-          scheme: 'notes',
-          host: 'create',
-          queryParameters: {
-            'title': noteTitle,
-            'text': noteContent,
-          },
-        ).toString();
-        
-        if (await canLaunchUrl(Uri.parse(alternativeUrl))) {
-          await launchUrl(Uri.parse(alternativeUrl));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not open Notes app')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Unable to open Apple Notes. Please ensure the app is installed.'),
+          ),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
