@@ -1,10 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { sendOTP } from '../../../lib/auth';
+import { rateLimit } from '../../../lib/rate-limit';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  await new Promise((resolve) => rateLimit(req, res, resolve));
+  if (res.headersSent) return;
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyToken } from '../../../lib/auth';
+import { rateLimit } from '../../../lib/rate-limit';
 
 if (!process.env.INSTACART_API_KEY) {
   throw new Error('Missing Instacart API key');
@@ -18,6 +19,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  await new Promise((resolve) => rateLimit(req, res, resolve));
+  if (res.headersSent) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
