@@ -262,7 +262,7 @@ class ApiService {
     
     if (kIsWeb) {
       final response = await _httpClient.get(
-        Uri.parse('$baseUrl/api/recipes/search').replace(queryParameters: {'q': query}),
+        Uri.parse('$baseUrl/api/search').replace(queryParameters: {'q': query}),
         headers: headers,
       );
       
@@ -273,7 +273,7 @@ class ApiService {
       }
     } else {
       final response = await _dio.get(
-        '/api/recipes/search',
+        '/api/search',
         options: Options(
           headers: headers,
           validateStatus: (status) => status! < 500,
