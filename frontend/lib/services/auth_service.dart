@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:frontend/services/supabase_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
@@ -20,13 +19,14 @@ class AuthService {
   static const String _devOtpKey = 'dev_otp';
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+  static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+
   // Initialize shared preferences
   static Future<SharedPreferences> get _prefs async => await SharedPreferences.getInstance();
 
   // Check if user is authenticated
   static Future<bool> isAuthenticated() async {
-    final prefs = await _prefs;
-    final authDataString = prefs.getString(_authKey);
+    final authDataString = await _secureStorage.read(key: _authKey);
     if (authDataString == null) return false;
 
     try {
@@ -44,8 +44,7 @@ class AuthService {
 
   // Get authentication data
   static Future<Map<String, dynamic>?> getAuthData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final authDataString = prefs.getString(_authKey);
+    final authDataString = await _secureStorage.read(key: _authKey);
     if (authDataString == null) return null;
     
     try {
@@ -62,22 +61,18 @@ class AuthService {
     required String userId,
     required String userName,
   }) async {
-    final prefs = await _prefs;
-    
-    // Save individual values
-    await prefs.setString(_tokenKey, token);
-    await prefs.setString(_userIdKey, userId);
-    await prefs.setString(_userNameKey, userName);
-    await prefs.setBool(_isAuthenticatedKey, true);
-    
-    // Save complete auth data
+    await _secureStorage.write(key: _tokenKey, value: token);
+    await _secureStorage.write(key: _userIdKey, value: userId);
+    await _secureStorage.write(key: _userNameKey, value: userName);
+    await _secureStorage.write(key: _isAuthenticatedKey, value: 'true');
+
     final authData = {
       'token': token,
       'user_id': userId,
       'user_name': userName,
       'timestamp': DateTime.now().toIso8601String(),
     };
-    await prefs.setString(_authKey, json.encode(authData));
+    await _secureStorage.write(key: _authKey, value: json.encode(authData));
   }
 
   // Verify OTP and get authentication token
@@ -102,12 +97,11 @@ class AuthService {
 
   // Logout user
   static Future<void> logout() async {
-    final prefs = await _prefs;
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userIdKey);
-    await prefs.remove(_userNameKey);
-    await prefs.setBool(_isAuthenticatedKey, false);
-    await prefs.remove(_authKey);
+    await _secureStorage.delete(key: _tokenKey);
+    await _secureStorage.delete(key: _userIdKey);
+    await _secureStorage.delete(key: _userNameKey);
+    await _secureStorage.delete(key: _isAuthenticatedKey);
+    await _secureStorage.delete(key: _authKey);
     
     // Update AuthProvider
     final context = navigatorKey.currentContext;
@@ -118,8 +112,7 @@ class AuthService {
 
   // Get authenticated headers for API requests
   static Future<Map<String, String>> getAuthHeaders() async {
-    final prefs = await _prefs;
-    final authDataString = prefs.getString(_authKey);
+    final authDataString = await _secureStorage.read(key: _authKey);
     if (authDataString == null) {
       return {"Content-Type": "application/json"};
     }
@@ -139,14 +132,12 @@ class AuthService {
 
   // Get user ID
   static Future<String?> getUserId() async {
-    final prefs = await _prefs;
-    return prefs.getString(_userIdKey);
+    return await _secureStorage.read(key: _userIdKey);
   }
 
   // Get user name
   static Future<String?> getUserName() async {
-    final prefs = await _prefs;
-    return prefs.getString(_userNameKey);
+    return await _secureStorage.read(key: _userNameKey);
   }
 
   // Development mode methods
@@ -211,7 +202,6 @@ class AuthService {
   }
 
   static Future<String?> getToken() async {
-    final prefs = await _prefs;
-    return prefs.getString(_tokenKey);
+    return await _secureStorage.read(key: _tokenKey);
   }
 } 

@@ -103,11 +103,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     // Combine country code with phone number for verification
     final fullPhoneNumber = '$selectedCountryCode$phone';
     final result = await AuthService.verifyOTP(fullPhoneNumber, code);
-    
+
     setState(() {
       isLoading = false;
       if (result['success'] == true) {
-        // Show username setup screen
+        widget.onAuthenticated();
+      } else if (result['code'] == 'need_username') {
         Navigator.push(
           context,
           MaterialPageRoute(

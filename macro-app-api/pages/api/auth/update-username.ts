@@ -1,11 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyToken, generateToken } from '../../../lib/auth';
 import { updateUsername } from '../../../lib/supabase';
+import { rateLimit } from '../../../lib/rate-limit';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  await new Promise((resolve) => rateLimit(req, res, resolve));
+  if (res.headersSent) return;
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

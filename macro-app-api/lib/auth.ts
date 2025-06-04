@@ -97,7 +97,7 @@ export async function authenticateUser(phone: string, otp: string, username?: st
     }
 
     if (!user) {
-      throw new Error('User not found and no username provided');
+      return { success: false, code: 'need_username' };
     }
 
     // Generate JWT token
