@@ -1,6 +1,8 @@
 from supabase import create_client, Client
 from config import Config
 
+"""Utility for loading and transforming Supabase data."""
+
 supabase: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
 
 
@@ -23,10 +25,27 @@ class DataLoader:
         self.instructions = self._fetch("instructions")
         self.meal_prep_tips = self._fetch("meal_prep_tips")
 
+        # Build a simple list of nutrition records with names resolved. This
+        # mirrors the pandas DataFrame used previously but avoids the pandas
+        # dependency at runtime.
+        self.nutrition_df = self._build_nutrition_records()
+
     def _fetch(self, table):
         result = supabase.table(table).select("*").execute()
         print(f"Fetched from {table}: {result.data}")
         return result.data
+
+    def _build_nutrition_records(self):
+        """Return nutrition records with nutrient names resolved."""
+        nutrient_map = {n["nutrient_id"]: n["name"] for n in self.nutrient_library}
+        records = []
+        for entry in self.recipe_nutrition:
+            records.append({
+                "recipe_id": entry.get("recipe_id"),
+                "nutrient_name": nutrient_map.get(entry.get("nutrient_id"), "Unknown"),
+                "value": entry.get("value", 0.0)
+            })
+        return records
 
     def get_recipe_by_id(self, recipe_id: str):
         """Return full recipe data using normalized structure"""
