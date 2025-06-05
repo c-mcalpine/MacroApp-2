@@ -167,3 +167,45 @@ export async function searchRecipes(query: string, filters: Record<string, any> 
     return [];
   }
 } 
+export async function filterRecipesByCalorieProteinRatio() {
+  try {
+    const { data, error } = await supabase
+      .from('recipe_nutrition_join_table')
+      .select('recipe_id, value, nutrient_library(name)');
+
+    if (error || !data) {
+      console.error('Error fetching nutrition data:', error);
+      return [];
+    }
+
+    const nutritionMap: Record<string, Record<string, number>> = {};
+    data.forEach((entry: any) => {
+      const rid = entry.recipe_id;
+      const name = entry.nutrient_library?.name?.toLowerCase();
+      const value = parseFloat(entry.value) || 0;
+      if (!name) return;
+      if (!nutritionMap[rid]) nutritionMap[rid] = {};
+      nutritionMap[rid][name] = value;
+    });
+
+    const results: { recipe_id: number; calories: number; protein: number; cal_per_protein: number }[] = [];
+    Object.entries(nutritionMap).forEach(([rid, nutrients]) => {
+      const calories = nutrients['calories'];
+      const protein = nutrients['protein'];
+      if (calories === undefined || !protein) return;
+      results.push({
+        recipe_id: Number(rid),
+        calories,
+        protein,
+        cal_per_protein: calories / protein,
+      });
+    });
+
+    results.sort((a, b) => a.cal_per_protein - b.cal_per_protein);
+    return results;
+  } catch (error) {
+    console.error('Error filtering recipes:', error);
+    return [];
+  }
+}
+

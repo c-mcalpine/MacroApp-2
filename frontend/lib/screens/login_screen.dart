@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../providers/auth_provider.dart';
-import '../services/supabase_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -87,26 +86,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      // First check if user exists
-      final existingUser = await SupabaseService.getUserByPhone(_fullPhoneNumber);
-      
-      if (existingUser != null) {
-        // User exists, proceed with login
-        final result = await AuthService.verifyOTP(
-          _fullPhoneNumber,
-          _otpController.text,
-        );
-        if (result['success'] == true) {
-          final authProvider = Provider.of<AuthProvider>(context, listen: false);
-          await authProvider.login(_fullPhoneNumber, userName: existingUser['username']);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(result['error'] ?? 'Invalid OTP')),
-          );
-        }
-      } else {
-        // User doesn't exist, show username input
+      final result = await AuthService.verifyOTP(
+        _fullPhoneNumber,
+        _otpController.text,
+      );
+
+      if (result['success'] == true) {
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        await authProvider.login(_fullPhoneNumber, userName: result['user_name']);
+      } else if (result['code'] == 'need_username') {
         setState(() => _showUsernameInput = true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['error'] ?? 'Invalid OTP')),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,10 +125,10 @@ class _LoginScreenState extends State<LoginScreen> {
         _otpController.text,
         username: _usernameController.text,
       );
-      
+
       if (result['success'] == true) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.login(_fullPhoneNumber, userName: _usernameController.text);
+        await authProvider.login(_fullPhoneNumber, userName: result['user_name']);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['error'] ?? 'Failed to complete signup')),

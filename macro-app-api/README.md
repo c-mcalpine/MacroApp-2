@@ -69,6 +69,11 @@ Authorization: Bearer <token>
 GET /api/search?q=chicken&min_protein=20
 ```
 
+#### Filter Recipes by Calories per Gram of Protein
+```http
+GET /api/recipes/filter
+```
+
 ### Shopping List
 
 #### Generate Instacart List
@@ -109,6 +114,7 @@ JWT_SECRET=
 
 # Instacart
 INSTACART_API_KEY=
+INSTACART_STORE_ID=
 
 # Upstash Redis
 UPSTASH_REDIS_REST_URL=

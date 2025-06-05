@@ -1,4 +1,3 @@
-import pandas as pd
 from flask import Blueprint, jsonify
 from services.data_loader import DataLoader
 
@@ -19,17 +18,29 @@ def get_recipe(recipe_id):
 
 @recipes_bp.route("/recipes/filter", methods=["GET"])
 def filter_recipes():
-    """Filter recipes based on calculated ratios (e.g., Calories per Gram of Protein)"""
-    df = data_loader.nutrition_df.pivot(index="recipe_id", columns="nutrient_name", values="value").reset_index()
+    """Filter recipes based on Calories per Gram of Protein."""
 
-    # Ensure values are numeric
-    df["calories"] = pd.to_numeric(df["calories"], errors="coerce")
-    df["protein"] = pd.to_numeric(df["protein"], errors="coerce")
+    # Build a lookup of nutrients for each recipe
+    nutrition_map = {}
+    for record in data_loader.nutrition_df:
+        rid = record.get("recipe_id")
+        name = record.get("nutrient_name", "").lower()
+        value = float(record.get("value", 0))
+        nutrition_map.setdefault(rid, {})[name] = value
 
-    # Calculate Calories per Gram of Protein
-    df["cal_per_protein"] = df["calories"] / df["protein"]
+    results = []
+    for rid, nutrients in nutrition_map.items():
+        calories = nutrients.get("calories")
+        protein = nutrients.get("protein")
+        if calories is None or protein in (None, 0):
+            continue
+        cal_per_protein = calories / protein
+        results.append({
+            "recipe_id": rid,
+            "calories": calories,
+            "protein": protein,
+            "cal_per_protein": cal_per_protein,
+        })
 
-    # Sort by the best (lowest) calorie per gram of protein
-    df = df.sort_values(by="cal_per_protein", ascending=True)
-
-    return jsonify(df.to_dict(orient="records"))
+    results = sorted(results, key=lambda x: x["cal_per_protein"])
+    return jsonify(results)
