@@ -6,6 +6,10 @@ if (!process.env.INSTACART_API_KEY) {
   throw new Error('Missing Instacart API key');
 }
 
+if (!process.env.INSTACART_STORE_ID) {
+  throw new Error('Missing Instacart store ID');
+}
+
 const INSTACART_API_URL = 'https://api.instacart.com/v2';
 const STORE_ID = process.env.INSTACART_STORE_ID;
 
