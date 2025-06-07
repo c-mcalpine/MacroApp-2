@@ -1,5 +1,6 @@
 from supabase import create_client, Client
 from config import Config
+import os
 
 """Utility for loading and transforming Supabase data."""
 
@@ -32,7 +33,8 @@ class DataLoader:
 
     def _fetch(self, table):
         result = supabase.table(table).select("*").execute()
-        print(f"Fetched from {table}: {result.data}")
+        if os.getenv("FLASK_ENV") != "production":
+            print(f"Fetched from {table}: {result.data}")
         return result.data
 
     def _build_nutrition_records(self):
