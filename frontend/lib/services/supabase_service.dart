@@ -291,4 +291,45 @@ CREATE TABLE users (
       return false;
     }
   }
-} 
+
+  static Future<bool> isRecipeHearted(String userId, int recipeId) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    try {
+      final user = await getUserByPhone(userId);
+      if (user == null) return false;
+
+      final result = await client
+          .from('hearted_recipes')
+          .select('id')
+          .eq('user_id', user['id'])
+          .eq('recipe_id', recipeId)
+          .maybeSingle();
+
+      return result != null;
+    } catch (e) {
+      print('Error checking hearted state: $e');
+      return false;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getRecipesForList(String listId) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    try {
+      final response = await client
+          .from('list_recipes')
+          .select('recipe_id, recipes(*)')
+          .eq('list_id', listId);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print('Error getting list recipes: $e');
+      return [];
+    }
+  }
+}
