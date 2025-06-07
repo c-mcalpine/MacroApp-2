@@ -20,6 +20,7 @@ MacroApp is a modern, user-friendly application designed to make meal preparatio
 ### Shopping & Meal Planning
 - Generate shopping lists from selected recipes
 - Instacart integration for easy grocery shopping
+- Create grocery lists in Apple Notes (iOS)
 - Track macro requirements and serving sizes
 - Plan meals in advance
 
@@ -83,6 +84,17 @@ flutter build ios --release
 cd ios && pod install
 ```
 Then open `Runner.xcworkspace` in Xcode and archive the app.
+
+### Backend Environment Variables
+
+The API layer requires an Instacart API key and store ID for generating
+shopping lists. Create a `.env` file in `macro-app-api` with the following
+variables:
+
+```
+INSTACART_API_KEY=your_instacart_api_key
+INSTACART_STORE_ID=your_store_id
+```
 
 
 ## Contributing
