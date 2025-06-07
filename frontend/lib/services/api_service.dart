@@ -168,9 +168,12 @@ class ApiService {
       
       if (kIsWeb) {
         final response = await _httpClient.post(
-          Uri.parse('$baseUrl/api/recipe/$recipeId/chat'),
+          Uri.parse('$baseUrl/api/recipe/chat'),
           headers: headers,
-          body: json.encode({"message": message}),
+          body: json.encode({
+            "recipe_id": recipeId,
+            "message": message
+          }),
         );
         
         if (response.statusCode == 200) {
@@ -185,12 +188,15 @@ class ApiService {
         }
       } else {
         final response = await _dio.post(
-          '/api/recipe/$recipeId/chat',
+          '/api/recipe/chat',
           options: Options(
             headers: headers,
             validateStatus: (status) => status! < 500,
           ),
-          data: {"message": message},
+          data: {
+            "recipe_id": recipeId,
+            "message": message
+          },
         );
         
         if (response.statusCode == 200) {
