@@ -164,6 +164,7 @@ class ApiService {
   static Future<String> chatWithAI(int recipeId, String message) async {
     try {
       final headers = await _getHeaders();
+      final token = await AuthService.getToken();
       print("Sending recipeId: $recipeId with message: $message");
       
       if (kIsWeb) {
@@ -172,7 +173,8 @@ class ApiService {
           headers: headers,
           body: json.encode({
             "recipe_id": recipeId,
-            "message": message
+            "message": message,
+            if (token != null) "token": token,
           }),
         );
         
@@ -195,7 +197,8 @@ class ApiService {
           ),
           data: {
             "recipe_id": recipeId,
-            "message": message
+            "message": message,
+            if (token != null) "token": token,
           },
         );
         
