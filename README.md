@@ -77,6 +77,13 @@ API_BASE_URL=your_api_base_url
 ```bash
 flutter run
 ```
+6. Build for iOS before archiving
+```bash
+flutter build ios --release
+cd ios && pod install
+```
+Then open `Runner.xcworkspace` in Xcode and archive the app.
+
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
