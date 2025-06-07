@@ -50,13 +50,13 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load hearted recipes from Supabase
       final heartedRecipesData = await SupabaseService.getHeartedRecipes(userId);
       
-      // Load custom lists from Supabase
+      // Load custom lists and their recipes from Supabase
       final customListsData = await SupabaseService.getCustomLists(userId);
-      
-      // Convert custom lists to the expected format
       final Map<String, List<Map<String, dynamic>>> formattedLists = {};
       for (var list in customListsData) {
-        formattedLists[list['name']] = [];
+        final listRecipes = await SupabaseService.getRecipesForList(list['id']);
+        formattedLists[list['name']] =
+            listRecipes.map((r) => r['recipes'] as Map<String, dynamic>).toList();
       }
       
       setState(() {
@@ -115,10 +115,13 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() {
             _selectedIndex = index;
           });
+          if (index == 2) {
+            await _loadUserData();
+          }
         },
         backgroundColor: Colors.black,
         selectedItemColor: Colors.deepOrange,

@@ -25,10 +25,21 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   bool _isHearted = false; // Track if the recipe is hearted
   late AnimationController _animationController;
 
+  Future<void> _checkHeartedState() async {
+    final userId = await AuthService.getUserId();
+    if (userId != null) {
+      final hearted = await SupabaseService.isRecipeHearted(userId, widget.recipeId);
+      if (mounted) {
+        setState(() => _isHearted = hearted);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     recipeDetails = ApiService.getRecipeDetails(widget.recipeId);
+    _checkHeartedState();
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 500),
@@ -232,7 +243,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
           IconButton(
             icon: Icon(Icons.add, color: Colors.white),
             onPressed: () {
-              _showSaveToListDialog(context, "Recipe Name", {}); // Replace with actual recipe name and custom lists
+              _showSaveToListDialog(context);
             },
           ),
         ],
@@ -741,7 +752,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     );
   }
 
-  void _showSaveToListDialog(BuildContext context, String recipeName, Map<String, List<Map<String, dynamic>>> customLists) async {
+  void _showSaveToListDialog(BuildContext context) async {
     try {
       final userId = await AuthService.getUserId();
       if (userId == null) {
@@ -787,13 +798,6 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         listId: list['id'],
                         recipeId: recipeId,
                       );
-                      
-                      setState(() {
-                        if (!customLists.containsKey(list['name'])) {
-                          customLists[list['name']] = [];
-                        }
-                        customLists[list['name']]!.add(recipe['recipe']);
-                      });
                       
                       if (!context.mounted) return;
                       Navigator.pop(context);
