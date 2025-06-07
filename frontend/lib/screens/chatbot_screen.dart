@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
+import 'package:flutter/foundation.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final Map<String, dynamic> recipe;
@@ -119,8 +120,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     try {
       // Correctly extract the recipeId
       final recipeId = widget.recipe['recipe']?['recipe_id'];
-      print("Sending message to AI for recipeId: $recipeId"); // Log recipeId
-      print("Recipe data in ChatbotScreen: ${widget.recipe}"); // Log recipe data
+      if (kDebugMode) {
+        print("Sending message to AI for recipeId: $recipeId");
+        print("Recipe data in ChatbotScreen: ${widget.recipe}");
+      }
 
       if (recipeId == null || recipeId <= 0) {
         throw Exception("Invalid recipeId");

@@ -22,21 +22,27 @@ export default async function handler(
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
   try {
-    console.log('Received OTP request:', {
-      method: req.method,
-      headers: req.headers,
-      body: req.body
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Received OTP request:', {
+        method: req.method,
+        headers: req.headers,
+        body: req.body
+      });
+    }
 
     const { phone_number } = req.body;
-    console.log('Phone number:', phone_number);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Phone number:', phone_number);
+    }
 
     if (!phone_number) {
-      console.log('Missing phone number');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Missing phone number');
+      }
       return res.status(400).json({
         success: false,
         error: 'Phone number is required'
@@ -45,13 +51,19 @@ export default async function handler(
 
     // Format phone number to ensure it starts with +
     const formattedPhone = phone_number.startsWith('+') ? phone_number : `+${phone_number}`;
-    console.log('Formatted phone number:', formattedPhone);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Formatted phone number:', formattedPhone);
+    }
 
     const result = await sendOTP(formattedPhone);
-    console.log('OTP send result:', result);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('OTP send result:', result);
+    }
 
     if (!result.success) {
-      console.log('Failed to send OTP:', result.error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Failed to send OTP:', result.error);
+      }
       return res.status(500).json({
         success: false,
         error: result.error

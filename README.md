@@ -40,7 +40,8 @@ MacroApp is a modern, user-friendly application designed to make meal preparatio
 - Local storage with SharedPreferences
 
 ### Backend
-- RESTful API architecture
+- Serverless API built with Next.js
+- Deployed to Vercel
 - Supabase for data storage
 - Environment variable management
 - Secure authentication system
@@ -87,14 +88,29 @@ Then open `Runner.xcworkspace` in Xcode and archive the app.
 
 ### Backend Environment Variables
 
-The API layer requires an Instacart API key and store ID for generating
-shopping lists. Create a `.env` file in `macro-app-api` with the following
-variables:
+Create a `.env` file in `macro-app-api` with the following variables:
 
 ```
-INSTACART_API_KEY=your_instacart_api_key
-INSTACART_STORE_ID=your_store_id
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_VERIFY_SERVICE_SID=
+OPENAI_API_KEY=
+JWT_SECRET=
+INSTACART_API_KEY=
+INSTACART_STORE_ID=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 ```
+
+For the Flutter app, create `frontend/.env` with:
+
+```
+API_BASE_URL=your_api_base_url
+```
+
+A sample configuration is provided in `.env.example`.
 
 
 ## Contributing

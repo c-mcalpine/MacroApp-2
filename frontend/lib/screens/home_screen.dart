@@ -4,6 +4,7 @@ import 'package:frontend/services/supabase_service.dart';
 import 'package:frontend/screens/explore_recipes_screen.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/screens/profile_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -37,7 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final name = await AuthService.getUserName();
       
       if (userId == null) {
-        print('No user ID found');
+        if (kDebugMode) {
+          print('No user ID found');
+        }
         setState(() {
           isLoading = false;
           heartedRecipes = [];
@@ -66,8 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = false;
       });
     } catch (e, stack) {
-      print('Error loading user data: $e');
-      print('Stack trace: $stack');
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+        print('Stack trace: $stack');
+      }
       setState(() {
         isLoading = false;
         heartedRecipes = [];

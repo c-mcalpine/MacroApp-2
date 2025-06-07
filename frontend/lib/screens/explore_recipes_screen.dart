@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import '../widgets/common/network_image_widget.dart';
 
 class ExploreRecipesScreen extends StatefulWidget {
@@ -71,9 +72,13 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
     );
     _opacityAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     
-    print('Initializing recipes...');
+    if (kDebugMode) {
+      print('Initializing recipes...');
+    }
     recipes = ApiService.getRecipes().catchError((error) {
-      print('Error loading recipes: $error');
+      if (kDebugMode) {
+        print('Error loading recipes: $error');
+      }
       return [];
     });
   }
@@ -152,8 +157,10 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
             return true;
           }).toList();
         } catch (e, stack) {
-          print("🔥 Filter error: $e");
-          print("📌 Stack trace: $stack");
+          if (kDebugMode) {
+            print("🔥 Filter error: $e");
+            print("📌 Stack trace: $stack");
+          }
           return [];
         }
       });
