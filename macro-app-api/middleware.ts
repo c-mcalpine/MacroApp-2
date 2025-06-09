@@ -13,8 +13,10 @@ export async function middleware(request: NextRequest) {
   // Add response time header
   response.headers.set('X-Response-Time', `${Date.now() - start}ms`);
 
-  // Log API requests
-  console.log(`${request.method} ${request.nextUrl.pathname} - ${response.status}`);
+  // Log API requests in non-production environments
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`${request.method} ${request.nextUrl.pathname} - ${response.status}`);
+  }
 
   return response;
 }

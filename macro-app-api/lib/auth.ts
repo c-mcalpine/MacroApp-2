@@ -44,18 +44,22 @@ export async function sendOTP(phone: string) {
       throw new Error('Missing Twilio credentials');
     }
 
-    console.log('Sending OTP with Twilio credentials:', {
-      accountSid: accountSid ? 'present' : 'missing',
-      authToken: authToken ? 'present' : 'missing',
-      verifyServiceSid: verifyServiceSid ? 'present' : 'missing'
-    });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Sending OTP with Twilio credentials:', {
+        accountSid: accountSid ? 'present' : 'missing',
+        authToken: authToken ? 'present' : 'missing',
+        verifyServiceSid: verifyServiceSid ? 'present' : 'missing'
+      });
+    }
 
     const client = twilio(accountSid, authToken);
     const verification = await client.verify.v2
       .services(verifyServiceSid)
       .verifications.create({ to: phone, channel: 'sms' });
 
-    console.log('Twilio verification response:', verification);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Twilio verification response:', verification);
+    }
 
     return {
       success: true,

@@ -4,6 +4,7 @@ import 'package:frontend/services/supabase_service.dart';
 import 'package:frontend/screens/explore_recipes_screen.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/screens/profile_screen.dart';
+import 'package:flutter/foundation.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -37,7 +38,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final name = await AuthService.getUserName();
       
       if (userId == null) {
-        print('No user ID found');
+        if (kDebugMode) {
+          print('No user ID found');
+        }
         setState(() {
           isLoading = false;
           heartedRecipes = [];
@@ -50,13 +53,13 @@ class _HomeScreenState extends State<HomeScreen> {
       // Load hearted recipes from Supabase
       final heartedRecipesData = await SupabaseService.getHeartedRecipes(userId);
       
-      // Load custom lists from Supabase
+      // Load custom lists and their recipes from Supabase
       final customListsData = await SupabaseService.getCustomLists(userId);
-      
-      // Convert custom lists to the expected format
       final Map<String, List<Map<String, dynamic>>> formattedLists = {};
       for (var list in customListsData) {
-        formattedLists[list['name']] = [];
+        final listRecipes = await SupabaseService.getRecipesForList(list['id']);
+        formattedLists[list['name']] =
+            listRecipes.map((r) => r['recipes'] as Map<String, dynamic>).toList();
       }
       
       setState(() {
@@ -66,8 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = false;
       });
     } catch (e, stack) {
-      print('Error loading user data: $e');
-      print('Stack trace: $stack');
+      if (kDebugMode) {
+        print('Error loading user data: $e');
+        print('Stack trace: $stack');
+      }
       setState(() {
         isLoading = false;
         heartedRecipes = [];
@@ -115,10 +120,13 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: (index) {
+        onTap: (index) async {
           setState(() {
             _selectedIndex = index;
           });
+          if (index == 2) {
+            await _loadUserData();
+          }
         },
         backgroundColor: Colors.black,
         selectedItemColor: Colors.deepOrange,

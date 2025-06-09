@@ -20,6 +20,7 @@ MacroApp is a modern, user-friendly application designed to make meal preparatio
 ### Shopping & Meal Planning
 - Generate shopping lists from selected recipes
 - Instacart integration for easy grocery shopping
+- Create grocery lists in Apple Notes (iOS)
 - Track macro requirements and serving sizes
 - Plan meals in advance
 
@@ -39,7 +40,8 @@ MacroApp is a modern, user-friendly application designed to make meal preparatio
 - Local storage with SharedPreferences
 
 ### Backend
-- RESTful API architecture
+- Serverless API built with Next.js
+- Deployed to Vercel
 - Supabase for data storage
 - Environment variable management
 - Secure authentication system
@@ -77,6 +79,39 @@ API_BASE_URL=your_api_base_url
 ```bash
 flutter run
 ```
+6. Build for iOS before archiving
+```bash
+flutter build ios --release
+cd ios && pod install
+```
+Then open `Runner.xcworkspace` in Xcode and archive the app.
+
+### Backend Environment Variables
+
+Create a `.env` file in `macro-app-api` with the following variables:
+
+```
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_VERIFY_SERVICE_SID=
+OPENAI_API_KEY=
+JWT_SECRET=
+INSTACART_API_KEY=
+INSTACART_STORE_ID=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+For the Flutter app, create `frontend/.env` with:
+
+```
+API_BASE_URL=your_api_base_url
+```
+
+A sample configuration is provided in `.env.example`.
+
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.

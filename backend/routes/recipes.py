@@ -1,12 +1,14 @@
 from flask import Blueprint, jsonify
 from services.data_loader import DataLoader
+import os
 
 recipes_bp = Blueprint("recipes", __name__)
 data_loader = DataLoader()
 
 @recipes_bp.route("/recipes", methods=["GET"])
 def get_recipes():
-    print(data_loader.recipes)  # <--- log it out
+    if os.getenv("FLASK_ENV") != "production":
+        print(data_loader.recipes)
     return jsonify(data_loader.recipes)
 
 @recipes_bp.route("/recipe/<string:recipe_id>", methods=["GET"])

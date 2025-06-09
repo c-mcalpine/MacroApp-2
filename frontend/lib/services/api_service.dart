@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'auth_service.dart';
 
@@ -27,20 +27,26 @@ class ApiService {
     // Add interceptors for logging
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
-        print('REQUEST[${options.method}] => PATH: ${options.path}');
-        print('Headers: ${options.headers}');
+        if (kDebugMode) {
+          print('REQUEST[${options.method}] => PATH: ${options.path}');
+          print('Headers: ${options.headers}');
+        }
         return handler.next(options);
       },
       onResponse: (response, handler) {
-        print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
+        if (kDebugMode) {
+          print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
+        }
         return handler.next(response);
       },
       onError: (DioException e, handler) {
-        print('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
-        print('Error type: ${e.type}');
-        print('Error message: ${e.message}');
-        if (e.response != null) {
-          print('Error response: ${e.response?.data}');
+        if (kDebugMode) {
+          print('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
+          print('Error type: ${e.type}');
+          print('Error message: ${e.message}');
+          if (e.response != null) {
+            print('Error response: ${e.response?.data}');
+          }
         }
         return handler.next(e);
       },
@@ -48,11 +54,13 @@ class ApiService {
   }
 
   static void _logEnvVars() {
-    print('ApiService initialization:');
-    print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
-    print('Base URL after processing: $baseUrl');
-    print('All env vars: ${dotenv.env}');
-    print('Is Web: $kIsWeb');
+    if (kDebugMode) {
+      print('ApiService initialization:');
+      print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
+      print('Base URL after processing: $baseUrl');
+      print('All env vars: ${dotenv.env}');
+      print('Is Web: $kIsWeb');
+    }
   }
 
   // Helper method to get authenticated headers
@@ -64,9 +72,13 @@ class ApiService {
 
   static Future<List<dynamic>> getRecipes() async {
     try {
-      print('Getting recipes from: $baseUrl/api/recipes');
+      if (kDebugMode) {
+        print('Getting recipes from: $baseUrl/api/recipes');
+      }
       final headers = await _getHeaders();
-      print('Request headers: $headers');
+      if (kDebugMode) {
+        print('Request headers: $headers');
+      }
 
       if (kIsWeb) {
         // Use http package for web
@@ -75,9 +87,11 @@ class ApiService {
           headers: headers,
         );
         
-        print('Response status code: ${response.statusCode}');
-        print('Response headers: ${response.headers}');
-        print('Response body: ${response.body}');
+        if (kDebugMode) {
+          print('Response status code: ${response.statusCode}');
+          print('Response headers: ${response.headers}');
+          print('Response body: ${response.body}');
+        }
         
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
@@ -86,12 +100,16 @@ class ApiService {
           } else if (data is List) {
             return data;
           } else {
-            print('Unexpected response format: $data');
+            if (kDebugMode) {
+              print('Unexpected response format: $data');
+            }
             throw Exception('Unexpected response format');
           }
         } else {
-          print('Failed to load recipes. Status code: ${response.statusCode}');
-          print('Error response: ${response.body}');
+          if (kDebugMode) {
+            print('Failed to load recipes. Status code: ${response.statusCode}');
+            print('Error response: ${response.body}');
+          }
           throw Exception('Failed to load recipes: ${response.statusCode}');
         }
       } else {
@@ -104,9 +122,11 @@ class ApiService {
           ),
         );
         
-        print('Response status code: ${response.statusCode}');
-        print('Response headers: ${response.headers}');
-        print('Response data: ${response.data}');
+        if (kDebugMode) {
+          print('Response status code: ${response.statusCode}');
+          print('Response headers: ${response.headers}');
+          print('Response data: ${response.data}');
+        }
         
         if (response.statusCode == 200) {
           final data = response.data;
@@ -115,17 +135,23 @@ class ApiService {
           } else if (data is List) {
             return data;
           } else {
-            print('Unexpected response format: $data');
+            if (kDebugMode) {
+              print('Unexpected response format: $data');
+            }
             throw Exception('Unexpected response format');
           }
         } else {
-          print('Failed to load recipes. Status code: ${response.statusCode}');
-          print('Error response: ${response.data}');
+          if (kDebugMode) {
+            print('Failed to load recipes. Status code: ${response.statusCode}');
+            print('Error response: ${response.data}');
+          }
           throw Exception('Failed to load recipes: ${response.statusCode}');
         }
       }
     } catch (e) {
-      print('Exception in getRecipes: $e');
+      if (kDebugMode) {
+        print('Exception in getRecipes: $e');
+      }
       rethrow;
     }
   }
@@ -164,47 +190,68 @@ class ApiService {
   static Future<String> chatWithAI(int recipeId, String message) async {
     try {
       final headers = await _getHeaders();
-      print("Sending recipeId: $recipeId with message: $message");
+      final token = await AuthService.getToken();
+      if (kDebugMode) {
+        print("Sending recipeId: $recipeId with message: $message");
+      }
       
       if (kIsWeb) {
         final response = await _httpClient.post(
-          Uri.parse('$baseUrl/api/recipe/$recipeId/chat'),
+          Uri.parse('$baseUrl/api/recipe/chat'),
           headers: headers,
-          body: json.encode({"message": message}),
+          body: json.encode({
+            "recipe_id": recipeId,
+            "message": message,
+            if (token != null) "token": token,
+          }),
         );
         
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           return data["response"];
         } else if (response.statusCode == 404) {
-          print("Error: Recipe not found for recipeId: $recipeId");
+          if (kDebugMode) {
+            print("Error: Recipe not found for recipeId: $recipeId");
+          }
           throw Exception('Recipe not found');
         } else {
-          print("Error: ${response.statusCode}, Body: ${response.body}");
+          if (kDebugMode) {
+            print("Error: ${response.statusCode}, Body: ${response.body}");
+          }
           throw Exception('AI chat failed');
         }
       } else {
         final response = await _dio.post(
-          '/api/recipe/$recipeId/chat',
+          '/api/recipe/chat',
           options: Options(
             headers: headers,
             validateStatus: (status) => status! < 500,
           ),
-          data: {"message": message},
+          data: {
+            "recipe_id": recipeId,
+            "message": message,
+            if (token != null) "token": token,
+          },
         );
         
         if (response.statusCode == 200) {
           return response.data["response"];
         } else if (response.statusCode == 404) {
-          print("Error: Recipe not found for recipeId: $recipeId");
+          if (kDebugMode) {
+            print("Error: Recipe not found for recipeId: $recipeId");
+          }
           throw Exception('Recipe not found');
         } else {
-          print("Error: ${response.statusCode}, Body: ${response.data}");
+          if (kDebugMode) {
+            print("Error: ${response.statusCode}, Body: ${response.data}");
+          }
           throw Exception('AI chat failed');
         }
       }
     } catch (e) {
-      print("Exception during chatWithAI: $e");
+      if (kDebugMode) {
+        print("Exception during chatWithAI: $e");
+      }
       throw Exception('AI chat failed');
     }
   }
@@ -228,7 +275,9 @@ class ApiService {
           final data = json.decode(response.body);
           return data["shopping_list_url"];
         } else {
-          print("Error: ${response.statusCode}, Body: ${response.body}");
+          if (kDebugMode) {
+            print("Error: ${response.statusCode}, Body: ${response.body}");
+          }
           return null;
         }
       } else {
@@ -247,12 +296,16 @@ class ApiService {
         if (response.statusCode == 200) {
           return response.data["shopping_list_url"];
         } else {
-          print("Error: ${response.statusCode}, Body: ${response.data}");
+          if (kDebugMode) {
+            print("Error: ${response.statusCode}, Body: ${response.data}");
+          }
           return null;
         }
       }
     } catch (e) {
-      print("Exception: $e");
+      if (kDebugMode) {
+        print("Exception: $e");
+      }
       return null;
     }
   }
