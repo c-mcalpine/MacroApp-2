@@ -86,6 +86,10 @@ cd ios && pod install
 ```
 Then open `Runner.xcworkspace` in Xcode and archive the app.
 
+The `.env` file is bundled with the Flutter app, so its values are available in
+release builds. Ensure `frontend/.env` is present before running `flutter build`
+to avoid missing environment variables on TestFlight.
+
 ### Backend Environment Variables
 
 Create a `.env` file in `macro-app-api` with the following variables:

@@ -8,26 +8,22 @@ class AppConfig {
   factory AppConfig() => _instance;
   AppConfig._internal();
 
-  // Configuration values
-  late final String supabaseUrl;
-  late final String supabaseAnonKey;
-  late final String apiBaseUrl;
+  // Accessors for environment values
+  String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
+  String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? '';
   
   // Initialize configuration based on environment
   Future<void> initialize() async {
-    if (kDebugMode) {
-      // In debug mode, load from .env file
-      await dotenv.load(fileName: ".env");
-    }
-    
-    // Use environment variables in both debug and production
-    supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
-    supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-    apiBaseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    // Load from .env file in all build modes
+    await dotenv.load(fileName: ".env");
     
     // Validate required configuration
-    if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty || apiBaseUrl.isEmpty) {
-      throw Exception('Missing required environment variables. Please check your configuration.');
+    if (supabaseUrl.isEmpty ||
+        supabaseAnonKey.isEmpty ||
+        apiBaseUrl.isEmpty) {
+      throw Exception(
+          'Missing required environment variables. Please check your configuration.');
     }
   }
   

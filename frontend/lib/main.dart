@@ -15,13 +15,7 @@ import 'services/api_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
-  print('Environment variables loaded:');
-  print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
-  print('All env vars: ${dotenv.env}');
-  
-  // Initialize app configuration
+  // Initialize app configuration (loads environment variables)
   final appConfig = AppConfig();
   await appConfig.initialize();
   
