@@ -80,6 +80,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - .env
+    - assets/.env
     - assets/images/
     - assets/animations/
 
