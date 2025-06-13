@@ -15,15 +15,37 @@ class AppConfig {
   
   // Initialize configuration based on environment
   Future<void> initialize() async {
-    // Load from .env file in all build modes
-    await dotenv.load(fileName: ".env");
-    
-    // Validate required configuration
-    if (supabaseUrl.isEmpty ||
-        supabaseAnonKey.isEmpty ||
-        apiBaseUrl.isEmpty) {
-      throw Exception(
-          'Missing required environment variables. Please check your configuration.');
+    try {
+      // Load from .env file in all build modes
+      await dotenv.load(fileName: ".env");
+      
+      if (kDebugMode) {
+        print('Environment variables loaded:');
+        print('SUPABASE_URL: ${dotenv.env['SUPABASE_URL']}');
+        print('SUPABASE_ANON_KEY: ${dotenv.env['SUPABASE_ANON_KEY']}');
+        print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
+      }
+      
+      // Validate required configuration
+      if (supabaseUrl.isEmpty ||
+          supabaseAnonKey.isEmpty ||
+          apiBaseUrl.isEmpty) {
+        throw Exception(
+            'Missing required environment variables. Please check your configuration.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading .env file: $e');
+      }
+      // In production, try to load from the app bundle
+      try {
+        await dotenv.load(fileName: "assets/.env");
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error loading .env from assets: $e');
+        }
+        rethrow;
+      }
     }
   }
   
