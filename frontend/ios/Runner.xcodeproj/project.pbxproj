@@ -14,7 +14,6 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
-		ENV_FILE /* .env in Resources */ = {isa = PBXBuildFile; fileRef = ENV_FILE_REF /* .env */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,7 +147,6 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
-				ENV_FILE_REF /* .env */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -252,7 +250,6 @@
 				9740EEB41CF90195004384FC /* Debug.xcconfig in Resources */,
 				7AFA3C8F1D35360C0083082E /* Release.xcconfig in Resources */,
 				9740EEB51CF90195004384FC /* Generated.xcconfig in Resources */,
-				ENV_FILE /* .env in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
