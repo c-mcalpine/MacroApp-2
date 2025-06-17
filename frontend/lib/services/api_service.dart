@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../config/app_config.dart';
 import 'auth_service.dart';
 
 class ApiService {
-  static final String baseUrl = dotenv.env['API_BASE_URL']!.replaceAll('/api', '');
+  static final String baseUrl =
+      const String.fromEnvironment('API_BASE_URL').replaceAll('/api', '');
   static late final Dio _dio;
   static late final http.Client _httpClient;
 
@@ -56,9 +57,7 @@ class ApiService {
   static void _logEnvVars() {
     if (kDebugMode) {
       print('ApiService initialization:');
-      print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
-      print('Base URL after processing: $baseUrl');
-      print('All env vars: ${dotenv.env}');
+      print('API_BASE_URL: $baseUrl');
       print('Is Web: $kIsWeb');
     }
   }
