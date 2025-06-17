@@ -70,25 +70,24 @@ cd frontend
 flutter pub get
 ```
 
-4. Create a .env file in the frontend directory with the following variables:
-```
-API_BASE_URL=your_api_base_url
+4. Provide configuration values using `--dart-define` when running or building.
+   Example:
+```bash
+flutter run \
+  --dart-define=API_BASE_URL=https://api.example.com \
+  --dart-define=SUPABASE_URL=your_supabase_url \
+  --dart-define=SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-5. Run the app
+5. Build for iOS before archiving
 ```bash
-flutter run
-```
-6. Build for iOS before archiving
-```bash
-flutter build ios --release
+flutter build ios --release \
+  --dart-define=API_BASE_URL=https://api.example.com \
+  --dart-define=SUPABASE_URL=your_supabase_url \
+  --dart-define=SUPABASE_ANON_KEY=your_supabase_anon_key
 cd ios && pod install
 ```
 Then open `Runner.xcworkspace` in Xcode and archive the app.
-
-The `.env` file is bundled with the Flutter app, so its values are available in
-release builds. Ensure `frontend/.env` is present before running `flutter build`
-to avoid missing environment variables on TestFlight.
 
 ### Backend Environment Variables
 
@@ -108,13 +107,8 @@ UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 ```
 
-For the Flutter app, create `frontend/.env` with:
-
-```
-API_BASE_URL=your_api_base_url
-```
-
-A sample configuration is provided in `.env.example`.
+For the Flutter app, pass values via `--dart-define` as shown above. A sample set
+of variables is listed in `.env.example` for reference.
 
 
 ## Contributing

@@ -1,16 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiClient {
-  static final String baseUrl = dotenv.env['API_BASE_URL']!;
+  static final String baseUrl = const String.fromEnvironment('API_BASE_URL');
 
   static void _logEnvVars() {
     if (kDebugMode) {
       print('ApiClient initialization:');
-      print('API_BASE_URL: ${dotenv.env['API_BASE_URL']}');
-      print('All env vars: ${dotenv.env}');
+      print('API_BASE_URL: $baseUrl');
     }
   }
 

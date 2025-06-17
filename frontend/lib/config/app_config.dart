@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// A class to manage application configuration across different environments
 class AppConfig {
@@ -8,25 +7,21 @@ class AppConfig {
   factory AppConfig() => _instance;
   AppConfig._internal();
 
-  // Accessors for environment values
-  String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
-  String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-  String get apiBaseUrl => dotenv.env['API_BASE_URL'] ?? '';
-  
-  // Initialize configuration based on environment
+  // Accessors for compile-time environment values
+  String get supabaseUrl => const String.fromEnvironment('SUPABASE_URL');
+  String get supabaseAnonKey => const String.fromEnvironment('SUPABASE_ANON_KEY');
+  String get apiBaseUrl => const String.fromEnvironment('API_BASE_URL');
+
+  // Validate configuration; called during startup
   Future<void> initialize() async {
-    // Load from .env file in all build modes
-    await dotenv.load(fileName: ".env");
-    
-    // Validate required configuration
     if (supabaseUrl.isEmpty ||
         supabaseAnonKey.isEmpty ||
         apiBaseUrl.isEmpty) {
       throw Exception(
-          'Missing required environment variables. Please check your configuration.');
+          'Missing required --dart-define values. Please provide SUPABASE_URL, SUPABASE_ANON_KEY and API_BASE_URL.');
     }
   }
-  
+
   // Helper method to check if we're in debug mode
   bool get isDebugMode => kDebugMode;
-} 
+}
