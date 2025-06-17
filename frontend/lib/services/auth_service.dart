@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../providers/auth_provider.dart';
 import 'api_client.dart';
 
 class AuthService {
-  static final String baseUrl = dotenv.env['API_BASE_URL']!;
+  static final String baseUrl = const String.fromEnvironment('API_BASE_URL');
   static const String _tokenKey = 'auth_token';
   static const String _userIdKey = 'user_id';
   static const String _userNameKey = 'user_name';

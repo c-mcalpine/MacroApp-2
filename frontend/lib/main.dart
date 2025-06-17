@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'config/app_config.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
