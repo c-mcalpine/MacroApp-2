@@ -1,0 +1,82 @@
+workflows:
+  ios-workflow:
+    name: iOS Workflow
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      vars:
+        # Add your environment variables here
+        API_BASE_URL: "https://macro-app-2.vercel.app"
+        SUPABASE_URL: "your_supabase_url_here"
+        SUPABASE_ANON_KEY: "your_supabase_anon_key_here"
+        # Add other environment variables as needed
+      flutter_arguments: "--dart-define=API_BASE_URL=$API_BASE_URL --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+    scripts:
+      - name: Set up code signing settings
+        script: |
+          # Set up code signing
+          keychain_name="codemagic.keychain"
+          keychain_password="temp"
+          
+          # Create temporary keychain
+          security create-keychain -p "$keychain_password" "$keychain_name"
+          security list-keychains -s "$keychain_name"
+          security default-keychain -s "$keychain_name"
+          security unlock-keychain -p "$keychain_password" "$keychain_name"
+          security set-keychain-settings -t 3600 -l ~/Library/Keychains/"$keychain_name"
+          
+          # Import certificates
+          echo $CM_CERTIFICATE | base64 --decode > /tmp/certificate.p12
+          echo $CM_CERTIFICATE_PASSWORD | security import /tmp/certificate.p12 -k "$keychain_name" -P "$CM_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          
+          # Import provisioning profile
+          echo $CM_PROVISIONING_PROFILE | base64 --decode > /tmp/profile.mobileprovision
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+          
+          # Set up code signing identity
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain_name"
+      - name: Get Flutter packages
+        script: |
+          cd frontend
+          flutter pub get
+      - name: Install iOS dependencies
+        script: |
+          cd frontend/ios
+          pod install
+      - name: Build iOS app
+        script: |
+          cd frontend
+          flutter build ios --release $flutter_arguments --no-codesign
+      - name: Build iOS archive
+        script: |
+          cd frontend/ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath build/Runner.xcarchive \
+            clean archive \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            PROVISIONING_PROFILE="$CM_PROVISIONING_PROFILE_UUID" \
+            DEVELOPMENT_TEAM="$CM_DEVELOPMENT_TEAM"
+      - name: Export iOS IPA
+        script: |
+          cd frontend/ios
+          xcodebuild -exportArchive \
+            -archivePath build/Runner.xcarchive \
+            -exportPath build/ios \
+            -exportOptionsPlist exportOptions.plist
+    artifacts:
+      - build/ios/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+      email:
+        recipients:
+          - your-email@example.com 
