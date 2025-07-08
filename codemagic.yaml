@@ -9,7 +9,7 @@ workflows:
         # Add your environment variables here
         PROJECT_PATH: "frontend"
         # Add other environment variables as needed
-      flutter_arguments: "--dart-define=API_BASE_URL=$API_BASE_URL --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+      #flutter_arguments: "--dart-define=API_BASE_URL=$API_BASE_URL --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
     scripts:
       - name: Set up code signing settings
         script: |
@@ -46,7 +46,11 @@ workflows:
       - name: Build iOS app
         script: |
           cd $PROJECT_PATH
-          flutter build ios --release $flutter_arguments --no-codesign
+          flutter build ios --release \
+          --dart-define=API_BASE_URL=$API_BASE_URL \
+          --dart-define=SUPABASE_URL=$SUPABASE_URL \
+          --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
+          --no-codesign
       - name: Build iOS archive
         script: |
           cd $PROJECT_PATH/ios
