@@ -7,9 +7,7 @@ workflows:
       cocoapods: default
       vars:
         # Add your environment variables here
-        API_BASE_URL: "https://macro-app-2.vercel.app"
-        SUPABASE_URL: "your_supabase_url_here"
-        SUPABASE_ANON_KEY: "your_supabase_anon_key_here"
+        PROJECT_PATH: "frontend"
         # Add other environment variables as needed
       flutter_arguments: "--dart-define=API_BASE_URL=$API_BASE_URL --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
     scripts:
@@ -39,19 +37,19 @@ workflows:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain_name"
       - name: Get Flutter packages
         script: |
-          cd frontend
+          cd $PROJECT_PATH
           flutter pub get
       - name: Install iOS dependencies
         script: |
-          cd frontend/ios
+          cd $PROJECT_PATH/ios
           pod install
       - name: Build iOS app
         script: |
-          cd frontend
+          cd $PROJECT_PATH
           flutter build ios --release $flutter_arguments --no-codesign
       - name: Build iOS archive
         script: |
-          cd frontend/ios
+          cd $PROJECT_PATH/ios
           xcodebuild -workspace Runner.xcworkspace \
             -scheme Runner \
             -configuration Release \
@@ -62,7 +60,7 @@ workflows:
             DEVELOPMENT_TEAM="$CM_DEVELOPMENT_TEAM"
       - name: Export iOS IPA
         script: |
-          cd frontend/ios
+          cd $PROJECT_PATH/ios
           xcodebuild -exportArchive \
             -archivePath build/Runner.xcarchive \
             -exportPath build/ios \
