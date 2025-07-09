@@ -1,6 +1,9 @@
 workflows:
   ios-workflow:
     name: iOS Workflow
+    integrations:
+      app_store_connect: 7WCXQ882N5
+      
     environment:
       ios_signing:
         distribution_type: app_store
@@ -13,23 +16,25 @@ workflows:
         API_BASE_URL: $API_BASE_URL
         SUPABASE_URL: $SUPABASE_URL
         SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
 
     scripts:
+      - name: Install CocoaPods
+        script: |
+          cd $PROJECT_PATH/ios
+          pod install
+
+      - name: Set up provisioning profiles
+        script: |
+          xcode-project use-profiles
+
       - name: Get Flutter packages
         script: |
           cd $PROJECT_PATH
           flutter pub get
 
-      - name: Install CocoaPods dependencies
-        script: |
-          cd $PROJECT_PATH/ios
-          pod install
-
-      - name: Set up automatic code signing
-        script: |
-          xcode-project use-profiles
-
-      - name: Build Flutter iOS app
+      - name: Build iOS app
         script: |
           cd $PROJECT_PATH
           flutter build ios --release \
@@ -37,21 +42,20 @@ workflows:
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
 
-      - name: Build and export IPA
+      - name: Archive and export IPA
         script: |
-          cd $PROJECT_PATH
-          xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
+          xcode-project build-ipa \
+            --workspace "$PROJECT_PATH/ios/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
-      - build/ios/*.ipa
+      - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - $PROJECT_PATH/flutter_drive.log
 
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
         submit_to_testflight: true
       email:
         recipients:
