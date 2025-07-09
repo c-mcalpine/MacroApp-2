@@ -2,8 +2,8 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     integrations:
-      app_store_connect: 7WCXQ882N5
-      
+      app_store_connect: Codemagic Api Key
+
     environment:
       ios_signing:
         distribution_type: app_store
