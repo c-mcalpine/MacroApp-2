@@ -51,7 +51,8 @@ workflows:
           cd $PROJECT_PATH/ios
           xcodebuild -exportArchive \
             -archivePath build/Runner.xcarchive \
-            -exportPath build/ios
+            -exportPath build/ios \
+            -exportOptionsPlist exportOptions.plist
 
     artifacts:
       - build/ios/*.ipa
