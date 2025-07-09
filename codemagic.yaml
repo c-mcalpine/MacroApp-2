@@ -4,7 +4,7 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: "com.christianmcalpine.macro"
+        bundle_identifier: "com.christianmcalpine.macroapp"
       flutter: stable
       xcode: latest
       cocoapods: default
