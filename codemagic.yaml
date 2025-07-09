@@ -46,14 +46,6 @@ workflows:
             -archivePath build/Runner.xcarchive \
             clean archive
 
-      - name: Export IPA
-        script: |
-          cd $PROJECT_PATH/ios
-          xcodebuild -exportArchive \
-            -archivePath build/Runner.xcarchive \
-            -exportPath build/ios \
-            -exportOptionsPlist exportOptions.plist
-
     artifacts:
       - build/ios/*.ipa
       - /tmp/xcodebuild_logs/*.log
