@@ -2,59 +2,41 @@ workflows:
   ios-workflow:
     name: iOS Workflow
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.christianmcalpine.macro"
       flutter: stable
       xcode: latest
       cocoapods: default
       vars:
-        # Add your environment variables here
         PROJECT_PATH: "frontend"
-        # Add other environment variables as needed
-      #flutter_arguments: "--dart-define=API_BASE_URL=$API_BASE_URL --dart-define=SUPABASE_URL=$SUPABASE_URL --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+        API_BASE_URL: $API_BASE_URL
+        SUPABASE_URL: $SUPABASE_URL
+        SUPABASE_ANON_KEY: $SUPABASE_ANON_KEY
+
     scripts:
-      - name: Set up code signing settings
-        script: |
-          # Set up code signing
-          keychain_name="codemagic.keychain"
-          keychain_password="temp"
-          
-          # Create temporary keychain
-          security create-keychain -p "$keychain_password" "$keychain_name"
-          security list-keychains -s "$keychain_name"
-          security default-keychain -s "$keychain_name"
-          security unlock-keychain -p "$keychain_password" "$keychain_name"
-          security set-keychain-settings -t 3600 -l ~/Library/Keychains/"$keychain_name"
-          
-          # Import certificates
-          echo $CM_CERTIFICATE | base64 --decode > /tmp/certificate.p12
-          echo $CM_CERTIFICATE_PASSWORD | security import /tmp/certificate.p12 -k "$keychain_name" -P "$CM_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          echo "Verifying identities:"
-          security find-identity -v -p codesigning "$keychain_name"
-          echo "Verifying certificates:"
-          security find-certificate -a -c "Apple Distribution" "$keychain_name"
-          
-          # Import provisioning profile
-          echo $CM_PROVISIONING_PROFILE | base64 --decode > /tmp/profile.mobileprovision
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp /tmp/profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-          
-          # Set up code signing identity
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keychain_password" "$keychain_name"
       - name: Get Flutter packages
         script: |
           cd $PROJECT_PATH
           flutter pub get
-      - name: Install iOS dependencies
+
+      - name: Install CocoaPods dependencies
         script: |
           cd $PROJECT_PATH/ios
           pod install
-      - name: Build iOS app
+
+      - name: Set up automatic code signing
+        script: |
+          xcode-project use-profiles
+
+      - name: Build Flutter iOS app
         script: |
           cd $PROJECT_PATH
           flutter build ios --release \
-          --dart-define=API_BASE_URL=$API_BASE_URL \
-          --dart-define=SUPABASE_URL=$SUPABASE_URL \
-          --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
-          --no-codesign
+            --dart-define=API_BASE_URL=$API_BASE_URL \
+            --dart-define=SUPABASE_URL=$SUPABASE_URL \
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+
       - name: Build iOS archive
         script: |
           cd $PROJECT_PATH/ios
@@ -62,21 +44,20 @@ workflows:
             -scheme Runner \
             -configuration Release \
             -archivePath build/Runner.xcarchive \
-            clean archive \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
-            PROVISIONING_PROFILE="$CM_PROVISIONING_PROFILE_UUID" \
-            DEVELOPMENT_TEAM="$CM_DEVELOPMENT_TEAM"
-      - name: Export iOS IPA
+            clean archive
+
+      - name: Export IPA
         script: |
           cd $PROJECT_PATH/ios
           xcodebuild -exportArchive \
             -archivePath build/Runner.xcarchive \
-            -exportPath build/ios \
-            -exportOptionsPlist exportOptions.plist
+            -exportPath build/ios
+
     artifacts:
       - build/ios/*.ipa
       - /tmp/xcodebuild_logs/*.log
-      - flutter_drive.log
+      - $PROJECT_PATH/flutter_drive.log
+
     publishing:
       app_store_connect:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
@@ -85,4 +66,4 @@ workflows:
         submit_to_testflight: true
       email:
         recipients:
-          - your-email@example.com 
+          - cp.mcalpine@icloud.com
