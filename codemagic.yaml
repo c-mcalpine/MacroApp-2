@@ -20,6 +20,11 @@ workflows:
         XCODE_SCHEME: "Runner"
 
     scripts:
+      - name: Get Flutter packages
+        script: |
+          cd $PROJECT_PATH
+          flutter pub get
+
       - name: Install CocoaPods
         script: |
           cd $PROJECT_PATH/ios
@@ -28,11 +33,6 @@ workflows:
       - name: Set up provisioning profiles
         script: |
           xcode-project use-profiles
-
-      - name: Get Flutter packages
-        script: |
-          cd $PROJECT_PATH
-          flutter pub get
 
       - name: Build iOS app
         script: |
