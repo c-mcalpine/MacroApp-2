@@ -26,7 +26,7 @@ workflows:
           
           # Import certificates
           echo $CM_CERTIFICATE | base64 --decode > /tmp/certificate.p12
-          echo $CM_CERTIFICATE_PASSWORD | security import /tmp/certificate.p12 -k "$keychain_name" -P "$CM_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          echo $CM_CERTIFICATE_PASSWORD | security import /tmp/certificate.p12 -k "$keychain_name" -P "$CM_CERTIFICATE_PASSWORD" -A
           
           # Import provisioning profile
           echo $CM_PROVISIONING_PROFILE | base64 --decode > /tmp/profile.mobileprovision
