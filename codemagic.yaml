@@ -53,7 +53,14 @@ workflows:
         script: |
           xcode-project build-ipa \
             --workspace "$PROJECT_PATH/ios/$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+            --scheme "$XCODE_SCHEME" \
+            --export-options-plist "$PROJECT_PATH/ios/exportOptions.plist"
+
+      - name: Inspect final IPA for 120x120 icon
+        script: |
+          mkdir -p /tmp/ipa_check
+          unzip -q build/ios/ipa/*.ipa -d /tmp/ipa_check
+          find /tmp/ipa_check -name "*60x60*"
 
     artifacts:
       - build/ios/ipa/*.ipa
