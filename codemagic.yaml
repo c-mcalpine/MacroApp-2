@@ -8,6 +8,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.christianmcalpine.macroapp"
+        team_id: "CLG74SY5Y9"
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -49,19 +50,12 @@ workflows:
             --dart-define=SUPABASE_URL=$SUPABASE_URL \
             --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
 
-      - name: Archive with Xcode (signed)
-        script: |
-          cd $PROJECT_PATH/ios
-          xcode-project build-archive \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-path build/ios/xcarchive/Runner.xcarchive
-
       - name: Export signed IPA
         script: |
-          xcode-project export-ipa \
-            --archive build/ios/xcarchive/Runner.xcarchive \
-            --export-options-plist "$PROJECT_PATH/ios/exportOptions.plist" 
+          xcode-project build-ipa \
+            --workspace "$PROJECT_PATH/ios/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --export-options-plist "$PROJECT_PATH/ios/exportOptions.plist"
 
       - name: Inspect final IPA for 120x120 icon
         script: |
