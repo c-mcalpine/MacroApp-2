@@ -8,7 +8,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.christianmcalpine.macroapp"
-        team_id: "CLG74SY5Y9"
       flutter: stable
       xcode: latest
       cocoapods: default
