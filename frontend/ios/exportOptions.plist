@@ -9,7 +9,12 @@
     <key>method</key>
     <string>app-store</string>
     <key>teamID</key>
-    <string>CLG74SY5Y9</string> 
+    <string>CLG74SY5Y9</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.christianmcalpine.macroapp</key>
+        <string>cmcalpinedistprovisioning</string>
+    </dict> 
     <key>signingStyle</key>
     <string>automatic</string>
     <key>stripSwiftSymbols</key>
@@ -18,5 +23,5 @@
     <true/>
     <key>uploadBitcode</key>
     <false/>
-    dict>
+</dict>
 </plist>

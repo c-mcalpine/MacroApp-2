@@ -54,7 +54,8 @@ workflows:
           xcode-project build-ipa \
             --workspace "$PROJECT_PATH/ios/$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --export-options-plist "$PROJECT_PATH/ios/exportOptions.plist"
+            --export-options-plist "$PROJECT_PATH/ios/exportOptions.plist" \
+            --verbose
 
       - name: Inspect final IPA for 120x120 icon
         script: |
