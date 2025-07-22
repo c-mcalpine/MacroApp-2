@@ -21,10 +21,12 @@ workflows:
         XCODE_SCHEME: "Runner"
 
     scripts:
-      - name: Get Flutter packages
-        script: |
-          cd $PROJECT_PATH
-          flutter pub get
+      - name: Clean iOS build and reset icon generation
+         script: |
+           cd $PROJECT_PATH
+           rm -rf ios/Runner/Assets.xcassets/AppIcon.appiconset
+           flutter pub get
+           flutter pub run flutter_launcher_icons
 
       - name: Install CocoaPods
         script: |
@@ -40,11 +42,6 @@ workflows:
           cd $PROJECT_PATH/ios
           LATEST_BUILD=$(app-store-connect get-latest-build-number "$APP_STORE_APPLE_ID")
           agvtool new-version -all $((LATEST_BUILD + 1))
-
-      - name: Generate App Icons
-        script: |
-          cd $PROJECT_PATH
-          flutter pub run flutter_launcher_icons:main
 
       - name: Build Flutter iOS binary with dart-define
         script: |
