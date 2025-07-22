@@ -24,6 +24,7 @@ workflows:
       - name: Clean iOS build and reset icon generation
         script: |
           cd $PROJECT_PATH
+          mkdir -p ios/Runner/Assets.xcassets/AppIcon.appiconset
           rm -rf ios/Runner/Assets.xcassets/AppIcon.appiconset
           flutter pub get
           flutter pub run flutter_launcher_icons
