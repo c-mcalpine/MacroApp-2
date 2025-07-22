@@ -21,13 +21,10 @@ workflows:
         XCODE_SCHEME: "Runner"
 
     scripts:
-      - name: Clean iOS build and reset icon generation
+      - name: Get Flutter packages
         script: |
           cd $PROJECT_PATH
-          mkdir -p ios/Runner/Assets.xcassets/AppIcon.appiconset
-          rm -f ios/Runner/Assets.xcassets/AppIcon.appiconset/*
           flutter pub get
-          flutter pub run flutter_launcher_icons
 
       - name: Install CocoaPods
         script: |
