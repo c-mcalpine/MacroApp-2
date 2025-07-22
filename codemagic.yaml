@@ -22,11 +22,11 @@ workflows:
 
     scripts:
       - name: Clean iOS build and reset icon generation
-         script: |
-           cd $PROJECT_PATH
-           rm -rf ios/Runner/Assets.xcassets/AppIcon.appiconset
-           flutter pub get
-           flutter pub run flutter_launcher_icons
+        script: |
+          cd $PROJECT_PATH
+          rm -rf ios/Runner/Assets.xcassets/AppIcon.appiconset
+          flutter pub get
+          flutter pub run flutter_launcher_icons
 
       - name: Install CocoaPods
         script: |
