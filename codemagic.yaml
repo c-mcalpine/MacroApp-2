@@ -41,6 +41,11 @@ workflows:
           LATEST_BUILD=$(app-store-connect get-latest-build-number "$APP_STORE_APPLE_ID")
           agvtool new-version -all $((LATEST_BUILD + 1))
 
+      - name: Generate App Icons
+        script: |
+          cd $PROJECT_PATH
+          flutter pub run flutter_launcher_icons:main
+
       - name: Build Flutter iOS binary with dart-define
         script: |
           cd $PROJECT_PATH
