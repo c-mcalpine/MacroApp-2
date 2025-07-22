@@ -25,7 +25,7 @@ workflows:
         script: |
           cd $PROJECT_PATH
           mkdir -p ios/Runner/Assets.xcassets/AppIcon.appiconset
-          rm -rf ios/Runner/Assets.xcassets/AppIcon.appiconset/*
+          rm -f ios/Runner/Assets.xcassets/AppIcon.appiconset/*
           flutter pub get
           flutter pub run flutter_launcher_icons
 
