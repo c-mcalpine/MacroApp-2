@@ -24,12 +24,14 @@ workflows:
       - name: Get Flutter packages
         script: |
           cd $PROJECT_PATH
+          flutter clean
           flutter pub get
 
       - name: Install CocoaPods
         script: |
-          cd $PROJECT_PATH/ios
-          pod install
+          cd $PROJECT_PATH/ios 
+          rm -rf build/
+          pod install --repo-update
 
       - name: Set up provisioning profiles
         script: |
@@ -40,6 +42,17 @@ workflows:
           cd $PROJECT_PATH/ios
           LATEST_BUILD=$(app-store-connect get-latest-build-number "$APP_STORE_APPLE_ID")
           agvtool new-version -all $((LATEST_BUILD + 1))
+
+      - name: Verify app icons exist
+        script: |
+          cd $PROJECT_PATH
+          echo "Checking for app icons..."
+          ls -la ios/Runner/Assets.xcassets/AppIcon.appiconset/
+          if [ ! -f "ios/Runner/Assets.xcassets/AppIcon.appiconset/1024.png" ]; then
+            echo "ERROR: 1024x1024 app icon is missing!"
+            exit 1
+          fi
+          echo "App icons found successfully"
 
       - name: Build Flutter iOS binary with dart-define
         script: |
@@ -57,11 +70,16 @@ workflows:
             --export-options-plist "$PROJECT_PATH/ios/exportOptions.plist" \
             --verbose
 
-      - name: Inspect final IPA for 120x120 icon
+      - name: Inspect final IPA for app icons
         script: |
           mkdir -p /tmp/ipa_check
           unzip -q build/ios/ipa/*.ipa -d /tmp/ipa_check
-          find /tmp/ipa_check -name "*60x60*"
+          echo "=== IPA Contents ==="
+          find /tmp/ipa_check -name "*.png" | grep -i icon
+          echo "=== App Icon Asset Catalog ==="
+          find /tmp/ipa_check -path "*/Assets.car" -exec echo "Found Assets.car: {}" \;
+          echo "=== Info.plist Icon Entries ==="
+          find /tmp/ipa_check -name "Info.plist" -exec plutil -p {} \; | grep -i icon || echo "No icon entries found in Info.plist"
 
     artifacts:
       - build/ios/ipa/*.ipa
