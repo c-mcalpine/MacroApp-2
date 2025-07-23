@@ -112,9 +112,9 @@ workflows:
         script: |
           cd $PROJECT_PATH
           flutter build ios --release \
-            --dart-define=API_BASE_URL=$API_BASE_URL \
-            --dart-define=SUPABASE_URL=$SUPABASE_URL \
-            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
+            --dart-define=API_BASE_URL=https://macro-app-2.vercel.app/api \
+            --dart-define=SUPABASE_URL=https://qrbkscwdophxxpgsdhih.supabase.co \
+            --dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFyYmtzY3dkb3BoeHhwZ3NkaGloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxNDY4NTAsImV4cCI6MjA1OTcyMjg1MH0.A3OZIw9PUaBKsuSFrjGIqoy_nVBeHolEinbtGP_Ilww
 
       - name: Export signed IPA
         script: |
