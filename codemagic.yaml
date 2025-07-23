@@ -46,23 +46,19 @@ workflows:
       - name: Verify app icons exist
         script: |
           cd $PROJECT_PATH
-          echo "Checking for required app icons..."
-          REQUIRED_ICONS="20.png 29.png 40.png 58.png 60.png 76.png 80.png 87.png 120.png 152.png 167.png 180.png 1024.png"
-          MISSING_ICONS=""
+          echo "Checking for app icons..."
+          ls -la ios/Runner/Assets.xcassets/AppIcon.appiconset/
           
+          REQUIRED_ICONS="20.png 29.png 40.png 58.png 60.png 76.png 80.png 87.png 120.png 152.png 167.png 180.png 1024.png"
           for icon in $REQUIRED_ICONS; do
-            if [ ! -f "ios/Runner/Assets.xcassets/AppIcon.appiconset/$icon" ]; then
-              MISSING_ICONS="$MISSING_ICONS $icon"
-            else
+            if [ -f "ios/Runner/Assets.xcassets/AppIcon.appiconset/$icon" ]; then
               echo "✓ Found: $icon"
+            else
+              echo "✗ Missing: $icon"
+              exit 1
             fi
           done
-          
-          if [ -n "$MISSING_ICONS" ]; then
-            echo "ERROR: Missing required app icons:$MISSING_ICONS"
-            exit 1
-          fi
-          echo "All required app icons found successfully"
+          echo "All required app icons found"
 
       - name: Verify asset catalog compilation
         script: |
