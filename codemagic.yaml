@@ -58,12 +58,39 @@ workflows:
         script: |
           cd $PROJECT_PATH/ios
           echo "=== Testing asset catalog compilation ==="
-          xcrun actool --compile /tmp/test_assets --platform iphoneos --minimum-deployment-target 12.0 --app-icon AppIcon --output-partial-info-plist /tmp/partial.plist Runner/Assets.xcassets
+          
+          # Create output directory
+          mkdir -p /tmp/test_assets
+          
+          # Test asset catalog compilation
+          xcrun actool \
+            --compile /tmp/test_assets \
+            --platform iphoneos \
+            --minimum-deployment-target 12.0 \
+            --app-icon AppIcon \
+            --output-partial-info-plist /tmp/partial.plist \
+            Runner/Assets.xcassets
+          
+          COMPILE_RESULT=$?
+          
+          echo "=== Compilation exit code: $COMPILE_RESULT ==="
           echo "=== Compilation result ==="
           ls -la /tmp/test_assets/
+          
           echo "=== Partial plist content ==="
-          cat /tmp/partial.plist || echo "No partial plist generated"
-      
+          if [ -f /tmp/partial.plist ]; then
+            cat /tmp/partial.plist
+          else
+            echo "No partial plist generated"
+          fi
+          
+          if [ $COMPILE_RESULT -ne 0 ]; then
+            echo "ERROR: Asset catalog compilation failed"
+            exit 1
+          fi
+          
+          echo "Asset catalog compilation successful"
+
       - name: Build Flutter iOS binary with dart-define
         script: |
           cd $PROJECT_PATH
