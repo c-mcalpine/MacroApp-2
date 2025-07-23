@@ -16,6 +16,10 @@ void main() async {
   
   // Initialize app configuration (loads environment variables)
   final appConfig = AppConfig();
+
+  print('🧪 SUPABASE_URL: ${appConfig.supabaseUrl}');
+  print('🧪 API_BASE_URL: ${appConfig.apiBaseUrl}');
+  print('🧪 SUPABASE_ANON_KEY: ${appConfig.supabaseAnonKey}');
   await appConfig.initialize();
   
   // Initialize Supabase with configuration values
