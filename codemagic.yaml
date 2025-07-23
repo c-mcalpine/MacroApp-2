@@ -31,6 +31,8 @@ workflows:
         script: |
           cd $PROJECT_PATH/ios 
           rm -rf build/
+          rm -rf ios/Pods/
+          rm -rf ios/Podfile.lock
           pod install --repo-update
 
       - name: Set up provisioning profiles
