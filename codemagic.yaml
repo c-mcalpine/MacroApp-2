@@ -23,6 +23,7 @@ workflows:
     scripts:
       - name: Get Flutter packages
         script: |
+          rm -rf ~/Library/Developer/Xcode/DerivedData
           cd $PROJECT_PATH
           flutter clean
           flutter pub get
@@ -92,12 +93,20 @@ workflows:
             echo "No partial plist generated"
           fi
           
+          echo "=== Assets.car contents ==="
+          if [ -f /tmp/test_assets/Assets.car ]; then
+            strings /tmp/test_assets/Assets.car | grep AppIcon || echo "No AppIcon strings found in .car"
+          else
+            echo "Assets.car not found!"
+          fi
+          
           if [ $COMPILE_RESULT -ne 0 ]; then
             echo "ERROR: Asset catalog compilation failed"
             exit 1
           fi
           
           echo "Asset catalog compilation successful"
+
 
       - name: Build Flutter iOS binary with dart-define
         script: |
