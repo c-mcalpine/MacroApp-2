@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart' as provider;
-import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'config/app_config.dart';
 import 'screens/home_screen.dart';
@@ -40,10 +39,14 @@ void main() async {
     logger.e('❌ Error during app initialization', error: e, stackTrace: s);
   }
 
-  runApp(MyApp());
+  runApp(MyApp(logger: logger));
 }
 
 class MyApp extends StatelessWidget {
+  final Logger logger;
+  
+  const MyApp({Key? key, required this.logger}) : super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return provider.ChangeNotifierProvider(
@@ -55,11 +58,18 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           brightness: Brightness.dark,
           scaffoldBackgroundColor: Colors.black,
-          textTheme: GoogleFonts.lexendTextTheme(ThemeData.dark().textTheme),
+          textTheme: ThemeData.dark().textTheme,
         ),
         navigatorKey: AuthService.navigatorKey,
         home: FutureBuilder<bool>(
-          future: AuthService.isAuthenticated(),
+          future: () async {
+            try{
+              return await AuthService.isAuthenticated();
+            } catch (e, s) {
+              logger.e('❌ Error checking authentication', error: e, stackTrace: s);
+              return false;
+            }
+          }(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
