@@ -82,7 +82,7 @@ class MyApp extends StatelessWidget {
               );
             }
 
-            final isAuthenticated = snapshot.data ?? false;
+                        final isAuthenticated = snapshot.data ?? false;
             if (isAuthenticated) {
               // Get auth data and update AuthProvider
               AuthService.getAuthData().then((authData) {
@@ -95,6 +95,8 @@ class MyApp extends StatelessWidget {
                     );
                   }
                 }
+              }).catchError((e, s) {
+                logger.e('❌ Error loading auth data', error: e, stackTrace: s);
               });
             }
 
