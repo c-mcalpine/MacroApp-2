@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/supabase_service.dart';
 import '../providers/auth_provider.dart';
@@ -19,10 +18,10 @@ class ProfileScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class ProfileScreenState extends State<ProfileScreen> {
   Future<void> _createNewList(BuildContext context) async {
     final TextEditingController listNameController = TextEditingController();
     
@@ -30,19 +29,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: Text(
+        title: const Text(
           'Create New List',
-          style: GoogleFonts.lexend(
+          style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Lexend',
           ),
         ),
         content: TextField(
           controller: listNameController,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: 'Enter list name',
-            hintStyle: TextStyle(color: Colors.white54),
+            hintStyle: const TextStyle(color: Colors.white54),
             filled: true,
             fillColor: Colors.white12,
             border: OutlineInputBorder(
@@ -54,9 +54,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Cancel',
-              style: GoogleFonts.lexend(color: Colors.white70),
+              style: TextStyle(color: Colors.white70, fontFamily: 'Lexend'),
             ),
           ),
           TextButton(
@@ -68,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final userId = context.read<AuthProvider>().phoneNumber;
                 if (userId == null) return;
                 
-                final newList = await SupabaseService.createCustomList(
+                await SupabaseService.createCustomList(
                   userId: userId,
                   listName: listName,
                 );
@@ -92,9 +92,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.pop(context);
               }
             },
-            child: Text(
+            child: const Text(
               'Create',
-              style: GoogleFonts.lexend(color: Colors.deepOrange),
+              style: TextStyle(color: Colors.deepOrange, fontFamily: 'Lexend'),
             ),
           ),
         ],
@@ -111,36 +111,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: Colors.black,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Profile Header
               Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 40,
                     backgroundColor: Colors.white12,
                     child: Icon(Icons.person, size: 40, color: Colors.white),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           userName ?? 'User',
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                         Text(
                           phoneNumber ?? '',
-                          style: GoogleFonts.lexend(
-                            fontSize: 16,
-                            color: Colors.white70,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                       ],
@@ -148,23 +150,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   if (kDebugMode)
                     IconButton(
-                      icon: Icon(Icons.settings, color: Colors.white),
+                      icon: const Icon(Icons.settings, color: Colors.white),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DevSettingsScreen(),
+                            builder: (context) => const DevSettingsScreen(),
                           ),
                         );
                       },
                     ),
                 ],
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Stats Section
               Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white12,
                   borderRadius: BorderRadius.circular(16),
@@ -178,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
 
               // Saved Recipes and Recipe Lists Section with Tabs
               DefaultTabController(
@@ -186,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TabBar(
+                    const TabBar(
                       indicatorColor: Colors.deepOrange,
                       labelColor: Colors.white,
                       unselectedLabelColor: Colors.white70,
@@ -196,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Tab(text: "Recipe Lists"),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     SizedBox(
                       height: 400,
                       child: TabBarView(
@@ -211,14 +213,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               
               // Settings Section
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               ListTile(
-                leading: Icon(Icons.logout, color: Colors.white),
-                title: Text(
+                leading: const Icon(Icons.logout, color: Colors.white),
+                title: const Text(
                   "Logout",
-                  style: GoogleFonts.lexend(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
+                    fontFamily: 'Lexend',
                   ),
                 ),
                 onTap: widget.onLogout,
@@ -235,17 +238,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(
           value,
-          style: GoogleFonts.lexend(
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            fontFamily: 'Lexend',
           ),
         ),
         Text(
           label,
-          style: GoogleFonts.lexend(
+          style: const TextStyle(
             fontSize: 14,
             color: Colors.white70,
+            fontFamily: 'Lexend',
           ),
         ),
       ],
@@ -254,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeartedRecipesTab() {
     return widget.heartedRecipes.isEmpty
-        ? Center(
+        ? const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -266,24 +271,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 SizedBox(height: 16),
                 Text(
                   "No saved recipes yet",
-                  style: GoogleFonts.lexend(
+                  style: TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
+                    fontFamily: 'Lexend',
                   ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   "Heart recipes to save them here",
-                  style: GoogleFonts.lexend(
+                  style: TextStyle(
                     color: Colors.white54,
                     fontSize: 14,
+                    fontFamily: 'Lexend',
                   ),
                 ),
               ],
             ),
           )
         : GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               childAspectRatio: 0.75,
               crossAxisSpacing: 12,
@@ -312,21 +319,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          Colors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
-                    padding: EdgeInsets.all(12),
+                                                padding: const EdgeInsets.all(12),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           recipe['name'] ?? '',
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            fontFamily: 'Lexend',
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -345,17 +353,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         // Add List Button
         Padding(
-          padding: EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.only(bottom: 16),
           child: ElevatedButton.icon(
             onPressed: () => _createNewList(context),
-            icon: Icon(Icons.add),
-            label: Text(
+            icon: const Icon(Icons.add),
+            label: const Text(
               'Create New List',
-              style: GoogleFonts.lexend(),
+              style: TextStyle(fontFamily: 'Lexend'),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepOrange,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -365,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Lists
         Expanded(
           child: widget.customLists.isEmpty
-              ? Center(
+              ? const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -377,17 +385,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 16),
                       Text(
                         "No recipe lists yet",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                       SizedBox(height: 8),
                       Text(
                         "Create lists to organize your recipes",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           color: Colors.white54,
                           fontSize: 14,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                     ],
@@ -400,26 +410,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     final recipes = widget.customLists[listName] ?? [];
                     return Card(
                       color: Colors.white12,
-                      margin: EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
                         title: Text(
                           listName,
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                         subtitle: Text(
                           "${recipes.length} recipes",
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
+                            fontFamily: 'Lexend',
                           ),
                         ),
-                        trailing: Icon(Icons.arrow_forward_ios, color: Colors.white70),
+                        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
                         onTap: () {
                           // Navigate to list details
                         },

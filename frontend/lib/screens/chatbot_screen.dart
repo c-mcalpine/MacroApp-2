@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:flutter/foundation.dart';
 
@@ -9,10 +8,10 @@ class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key, required this.recipe});
 
   @override
-  _ChatbotScreenState createState() => _ChatbotScreenState();
+  ChatbotScreenState createState() => ChatbotScreenState();
 }
 
-class _ChatbotScreenState extends State<ChatbotScreen> {
+class ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _chatController = TextEditingController();
   final List<Map<String, String>> _messages = []; // Stores chat messages
   bool _isLoading = false; // Track loading state for AI responses
@@ -25,15 +24,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
             "Ask a Question",
-            style: GoogleFonts.lexend(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.white,
+              fontFamily: 'Lexend',
             ),
           ),
         ),
@@ -42,7 +42,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Chat Messages
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final message = _messages[index];
@@ -50,15 +50,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 return Align(
                   alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                    padding: EdgeInsets.all(12),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: isUser ? Colors.blueAccent : Colors.grey[800],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       message['content']!,
-                      style: GoogleFonts.lexend(color: Colors.white),
+                      style: const TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                     ),
                   ),
                 );
@@ -66,38 +66,38 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
           if (_isLoading)
-            Padding(
+            const Padding(
               padding: EdgeInsets.all(8),
               child: CircularProgressIndicator(color: Colors.blueAccent),
             ),
           // Text Input
           Padding(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _chatController,
                     maxLines: null,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: "Type your message...",
-                      hintStyle: TextStyle(color: Colors.white54),
+                      hintStyle: const TextStyle(color: Colors.white54),
                       filled: true,
                       fillColor: Colors.grey[900],
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 FloatingActionButton(
                   onPressed: _sendMessage,
                   backgroundColor: Colors.blueAccent,
-                  child: Icon(Icons.send, color: Colors.white),
+                  child: const Icon(Icons.send, color: Colors.white),
                 ),
               ],
             ),

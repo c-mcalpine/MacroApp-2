@@ -15,10 +15,10 @@ class HomeScreen extends StatefulWidget {
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   List<Map<String, dynamic>> heartedRecipes = [];
   Map<String, List<Map<String, dynamic>>> customLists = {};
@@ -85,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: Colors.black,
         body: Center(
           child: Column(
@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final List<Widget> _pages = [
+    final List<Widget> pages = [
       ExploreRecipesScreen(onRecipeSelected: (recipeId) {
         // Handle recipe selection
       }),
@@ -117,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _pages[_selectedIndex],
+      body: pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) async {
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.black,
         selectedItemColor: Colors.deepOrange,
         unselectedItemColor: Colors.white54,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',

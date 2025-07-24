@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:logger/logger.dart';
+
 import 'config/app_config.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
@@ -58,7 +59,11 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.deepOrange,
           brightness: Brightness.dark,
           scaffoldBackgroundColor: Colors.black,
-          textTheme: ThemeData.dark().textTheme,
+          textTheme: ThemeData.dark().textTheme.copyWith(
+            bodyLarge: const TextStyle(fontFamily: 'Lexend'),
+            bodyMedium: const TextStyle(fontFamily: 'Lexend'),
+            bodySmall: const TextStyle(fontFamily: 'Lexend'),
+          ),
         ),
         navigatorKey: AuthService.navigatorKey,
         home: FutureBuilder<bool>(
@@ -88,7 +93,7 @@ class MyApp extends StatelessWidget {
               AuthService.getAuthData().then((authData) {
                 if (authData != null) {
                   final context = AuthService.navigatorKey.currentContext;
-                  if (context != null) {
+                  if (context != null && context.mounted) {
                     provider.Provider.of<AuthProvider>(context, listen: false).login(
                       authData['user_id'],
                       userName: authData['user_name'],
@@ -109,7 +114,7 @@ class MyApp extends StatelessWidget {
                           authProvider.logout();
                         },
                       )
-                    : LoginScreen();
+                    : const LoginScreen();
               },
             );
           },

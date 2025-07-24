@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../common/network_image_widget.dart';
 
 class RecipeHeader extends StatelessWidget {
@@ -25,12 +24,12 @@ class RecipeHeader extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(recipe['name'] ?? "Unknown Recipe", textAlign: TextAlign.center, style: GoogleFonts.lexend(fontSize: 28, color: Colors.white)),
+              Text(recipe['name'] ?? "Unknown Recipe", textAlign: TextAlign.center, style: TextStyle(fontSize: 28, color: Colors.white, fontFamily: 'Lexend')),
               SizedBox(height: 16),
               Wrap(
                 spacing: 8,
                 children: (recipe['tags'] as List<dynamic>? ?? []).map((tag) {
-                  return Chip(label: Text(tag['tag_name'] ?? "Unknown", style: GoogleFonts.lexend(color: Colors.white)));
+                  return Chip(label: Text(tag['tag_name'] ?? "Unknown", style: TextStyle(color: Colors.white, fontFamily: 'Lexend')));
                 }).toList(),
               ),
             ],

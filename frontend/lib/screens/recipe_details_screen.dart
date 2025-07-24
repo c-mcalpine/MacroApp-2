@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/services/supabase_service.dart';
 import 'package:frontend/services/auth_service.dart';
@@ -16,10 +16,10 @@ class RecipeDetailsScreen extends StatefulWidget {
   const RecipeDetailsScreen({super.key, required this.recipeId, required this.onHearted});
 
   @override
-  _RecipeDetailsScreenState createState() => _RecipeDetailsScreenState();
+  RecipeDetailsScreenState createState() => RecipeDetailsScreenState();
 }
 
-class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
+class RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     with SingleTickerProviderStateMixin {
   late Future<Map<String, dynamic>> recipeDetails;
   int _touchedIndex = -1; // Track the currently touched section
@@ -43,7 +43,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     _checkHeartedState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 500),
     );
   }
 
@@ -73,12 +73,14 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       if (kDebugMode) {
         print('Error toggling heart: $e');
       }
-      setState(() {
-        _isHearted = !_isHearted;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update recipe status')),
-      );
+      if (mounted) {
+        setState(() {
+          _isHearted = !_isHearted;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update recipe status')),
+        );
+      }
     }
   }
 
@@ -87,22 +89,26 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       final ingredients = recipe['ingredients'] ?? [];
       final shoppingListUrl = await ApiService.getInstacartShoppingList(ingredients);
 
-      if (shoppingListUrl != null && await canLaunch(shoppingListUrl)) {
-        await launch(shoppingListUrl);
+      if (shoppingListUrl != null && await canLaunchUrl(Uri.parse(shoppingListUrl))) {
+        await launchUrl(Uri.parse(shoppingListUrl));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Unable to generate shopping list. Please check your API key and permissions.")),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Unable to generate shopping list. Please check your API key and permissions.")),
+          );
+        }
       }
     } catch (e) {
-      if (e.toString().contains("403")) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Access denied. Please check your API key and permissions.")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error generating shopping list: $e")),
-        );
+      if (mounted) {
+        if (e.toString().contains("403")) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Access denied. Please check your API key and permissions.")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error generating shopping list: $e")),
+          );
+        }
       }
     }
   }
@@ -132,17 +138,21 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       if (await canLaunchUrl(notesUri)) {
         await launchUrl(notesUri);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Unable to open Apple Notes. Please ensure the app is installed.'),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Unable to open Apple Notes. Please ensure the app is installed.'),
+            ),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error creating note: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error creating note: $e')),
+        );
+      }
     }
   }
 
@@ -154,8 +164,8 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text('Select Ingredients for Notes'),
-          content: Container(
+          title: const Text('Select Ingredients for Notes'),
+          content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
@@ -177,7 +187,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -188,7 +198,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                 _createNotesWithIngredients(selectedItems, recipe['recipe']['name'] ?? 'Recipe');
                 Navigator.pop(context);
               },
-              child: Text('Create Note'),
+              child: const Text('Create Note'),
             ),
           ],
         ),
@@ -217,16 +227,17 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
           ),
         ),
       ),
-      title: Text(
+      title: const Text(
         "Recipe Details",
-        style: GoogleFonts.lexend(
+        style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w500,
           color: Colors.white,
+          fontFamily: 'Lexend',
         ),
       ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -244,9 +255,9 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
           ),
           // Save to List Button
           IconButton(
-            icon: Icon(Icons.add, color: Colors.white),
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: () {
-              _showSaveToListDialog(context);
+              _showSaveToListDialog();
             },
           ),
         ],
@@ -257,9 +268,9 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
             future: recipeDetails,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
+                return const Center(child: CircularProgressIndicator());
               } else if (snapshot.hasError || snapshot.data == null) {
-                return Center(
+                return const Center(
                   child: Text(
                     "Error loading recipe",
                     style: TextStyle(color: Colors.white),
@@ -273,11 +284,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
               // Extract join table data with null safety
               final ingredients = recipe['recipe_ingredients_join_table'] as List<dynamic>? ?? [];
               final nutrition = recipe['recipe_nutrition_join_table'] as List<dynamic>? ?? [];
-              final dietPlans = recipe['recipe_diet_plan_join_table'] as List<dynamic>? ?? [];
               final tags = recipe['recipe_tags_join_table'] as List<dynamic>? ?? [];
 
               return SingleChildScrollView(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -307,10 +317,11 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                               Text(
                                 recipeDetails['name'] ?? "Unknown Recipe",
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.lexend(
+                                style: const TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
+                                  fontFamily: 'Lexend',
                                   shadows: [
                                     Shadow(
                                       offset: Offset(0, 2),
@@ -320,7 +331,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                   ],
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               // Tags
                               Wrap(
                                 spacing: 8,
@@ -331,9 +342,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                     backgroundColor: _getTagColor(tag['tag_name'] ?? "Unknown"),
                                     label: Text(
                                       tag['tag_name'] ?? "Unknown",
-                                      style: GoogleFonts.lexend(
+                                      style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w500,
+                                        fontFamily: 'Lexend',
                                       ),
                                     ),
                                     elevation: 4,
@@ -346,7 +358,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         ),
                       ],
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     
                     // Cooking Time & Servings
                     Row(
@@ -354,21 +366,23 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                       children: [
                         Text(
                           "⏳ ${recipeDetails['total_time'] ?? 'N/A'} min",
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                         Text(
                           "🍽 ${recipeDetails['servings'] ?? 'N/A'} servings",
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             fontSize: 18,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
                     // Chatbot, Instacart, and Notes Section
                     Row(
@@ -377,10 +391,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         // Chatbot Button
                         ElevatedButton.icon(
                           onPressed: () => _showChatbotScreen(context, recipe),
-                          icon: Icon(Icons.auto_awesome, color: Colors.white),
-                          label: Text(
+                          icon: const Icon(Icons.auto_awesome, color: Colors.white),
+                          label: const Text(
                             "Ask",
-                            style: GoogleFonts.lexend(color: Colors.white),
+                            style: TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blueAccent,
@@ -392,10 +406,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         // Instacart Integration
                         ElevatedButton.icon(
                           onPressed: () => _shopRecipe(recipe),
-                          icon: Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                          label: Text(
+                          icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+                          label: const Text(
                             "Shop",
-                            style: GoogleFonts.lexend(color: Colors.white),
+                            style: TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
@@ -407,13 +421,13 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         // Notes Button
                         ElevatedButton.icon(
                           onPressed: () => _showIngredientsChecklistDialog(context, recipe),
-                          icon: Icon(Icons.note_add, color: Colors.white),
-                          label: Text(
+                          icon: const Icon(Icons.note_add, color: Colors.white),
+                          label: const Text(
                             "+ Notes",
-                            style: GoogleFonts.lexend(color: Colors.white),
+                            style: TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFFFD700),
+                            backgroundColor: const Color(0xFFFFD700),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
@@ -421,21 +435,22 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Ingredients Section
-                        Text(
+                        const Text(
                           "Ingredients",
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (() {
@@ -453,24 +468,25 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             return groupedIngredients.entries.map((entry) {
                               return Card(
                                 color: Colors.white10,
-                                margin: EdgeInsets.symmetric(vertical: 4.0),
+                                margin: const EdgeInsets.symmetric(vertical: 4.0),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 child: Padding(
-                                  padding: EdgeInsets.all(8.0),
+                                  padding: const EdgeInsets.all(8.0),
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         entry.key,
-                                        style: GoogleFonts.lexend(
+                                        style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
+                                          fontFamily: 'Lexend',
                                         ),
                                       ),
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
                                       Wrap(
                                         spacing: 16,
                                         runSpacing: 4,
@@ -479,9 +495,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                             width: (MediaQuery.of(context).size.width - 64) / 2,
                                             child: Text(
                                               "• ${ingredient['amount'] ?? ''} ${ingredient['unit'] ?? ''} ${ingredient['name'] ?? ''}",
-                                              style: GoogleFonts.lexend(
+                                              style: const TextStyle(
                                                 fontSize: 14,
                                                 color: Colors.white70,
+                                                fontFamily: 'Lexend',
                                               ),
                                             ),
                                           );
@@ -494,18 +511,19 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             }).toList();
                           })(),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                     
                         // Instructions Section
-                        Text(
+                        const Text(
                           "Instructions",
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: (recipeDetails['instructions'] as List<dynamic>? ?? []).map((step) {
@@ -519,18 +537,19 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     
                     // Nutrition Info
-                    Text(
+                    const Text(
                       "Nutrition Facts (Per Serving)",
-                      style: GoogleFonts.lexend(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontFamily: 'Lexend',
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Card(
                       color: Colors.white10,
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -554,10 +573,10 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                       builder: (context) {
                                         var pieChartSections = _getPieChartSections(nutrition, _touchedIndex);
                                         if (pieChartSections.isEmpty) {
-                                          return Center(
+                                          return const Center(
                                             child: Text(
                                               "No nutrition data available",
-                                              style: GoogleFonts.lexend(color: Colors.white),
+                                              style: TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                                             ),
                                           );
                                         }
@@ -589,28 +608,30 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: 16),
+                                const SizedBox(width: 16),
                                 // Calories-per-Gram Indicator
                                 Expanded(
                                   flex: 3,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
+                                      const Text(
                                         "Calories per Gram of Protein",
-                                        style: GoogleFonts.lexend(
+                                        style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
+                                          fontFamily: 'Lexend',
                                         ),
                                       ),
-                                      SizedBox(height: 8),
+                                      const SizedBox(height: 8),
                                       Text(
                                         _getCaloriesPerGramText(nutrition),
-                                        style: GoogleFonts.lexend(
+                                        style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
                                           color: _getCaloriesPerGramColor(nutrition),
+                                          fontFamily: 'Lexend',
                                         ),
                                       ),
                                     ],
@@ -618,7 +639,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                 ),
                               ],
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             // Divider Line
                             Container(
                               height: 1,
@@ -628,8 +649,8 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                             // Nutrients Grid
                             GridView.builder(
                               shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 childAspectRatio: 3.5,
                                 crossAxisSpacing: 8,
@@ -643,17 +664,19 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                   children: [
                                     Text(
                                       nutrient['name'] ?? "Unknown",
-                                      style: GoogleFonts.lexend(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
+                                        fontFamily: 'Lexend',
                                       ),
                                     ),
                                     Text(
                                       "${nutrient['value']} ${nutrient['unit']}",
-                                      style: GoogleFonts.lexend(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         color: Colors.white70,
+                                        fontFamily: 'Lexend',
                                       ),
                                     ),
                                   ],
@@ -664,18 +687,19 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         ),
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     
                     // Meal Prep Tips
-                    Text(
+                    const Text(
                       "Meal Prep Tips",
-                      style: GoogleFonts.lexend(
+                      style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        fontFamily: 'Lexend',
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: (recipeDetails['meal_prep_tips'] as List<dynamic>? ?? []).map((tip) {
@@ -695,25 +719,27 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                                   color: Colors.white,
                                   size: 32,
                                 ),
-                                SizedBox(width: 16),
+                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         tip['storage_type'] ?? "Unknown",
-                                        style: GoogleFonts.lexend(
+                                        style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
+                                          fontFamily: 'Lexend',
                                         ),
                                       ),
-                                      SizedBox(height: 8),
+                                      const SizedBox(height: 8),
                                       Text(
                                         tip['details'] ?? "",
-                                        style: GoogleFonts.lexend(
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           color: Colors.white70,
+                                          fontFamily: 'Lexend',
                                         ),
                                       ),
                                     ],
@@ -740,7 +766,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                     opacity: 1 - progress,
                     child: Transform.translate(
                       offset: Offset(0, -200 * progress),
-                      child: Icon(
+                      child: const Icon(
                         Icons.favorite,
                         color: Colors.red,
                         size: 100,
@@ -755,13 +781,15 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
     );
   }
 
-  void _showSaveToListDialog(BuildContext context) async {
+  void _showSaveToListDialog() async {
     try {
       final userId = await AuthService.getUserId();
       if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You must be logged in to save recipes')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('You must be logged in to save recipes')),
+          );
+        }
         return;
       }
 
@@ -771,21 +799,22 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       final userLists = await SupabaseService.getCustomLists(userId);
       
       if (userLists.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Create a list first to save recipes')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Create a list first to save recipes')),
+          );
+        }
         return;
       }
 
-      if (!context.mounted) return;
-
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text(
+            title: const Text(
               "Save to List",
-              style: GoogleFonts.lexend(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend'),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -793,7 +822,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                 return ListTile(
                   title: Text(
                     list['name'],
-                    style: GoogleFonts.lexend(),
+                    style: const TextStyle(fontFamily: 'Lexend'),
                   ),
                   onTap: () async {
                     try {
@@ -802,17 +831,17 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                         recipeId: recipeId,
                       );
                       
-                      if (!context.mounted) return;
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (!mounted) return;
+                      Navigator.pop(this.context);
+                      ScaffoldMessenger.of(this.context).showSnackBar(
                         SnackBar(content: Text('Recipe added to ${list['name']}')),
                       );
                     } catch (e) {
                       if (kDebugMode) {
                         print('Error adding recipe to list: $e');
                       }
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(this.context).showSnackBar(
                         const SnackBar(content: Text('Failed to add recipe to list')),
                       );
                     }
@@ -833,7 +862,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       if (kDebugMode) {
         print('Error showing save dialog: $e');
       }
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to load lists')),
       );
@@ -849,7 +878,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
 
     if (recipeId == null || recipeId <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Invalid recipe data. Cannot open AI chat.")),
+        const SnackBar(content: Text("Invalid recipe data. Cannot open AI chat.")),
       );
       return;
     }
@@ -861,7 +890,7 @@ class _RecipeDetailsScreenState extends State<RecipeDetailsScreen>
           opacity: animation,
           child: ChatbotScreen(recipe: recipe),
         ),
-        transitionDuration: Duration(milliseconds: 250),
+        transitionDuration: const Duration(milliseconds: 250),
       ),
     );
   }
@@ -903,13 +932,14 @@ class __CollapsibleIngredientSectionState
                 _isExpanded ? Icons.expand_less : Icons.expand_more,
                 color: Colors.white,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 widget.sectionName,
-                style: GoogleFonts.lexend(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  fontFamily: 'Lexend',
                 ),
               ),
             ],
@@ -931,9 +961,10 @@ class __CollapsibleIngredientSectionState
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Text(
                       "• ${ingredient['amount']} ${ingredient['unit']} ${ingredient['name']}${ingredient['notes']}",
-                      style: GoogleFonts.lexend(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
+                        fontFamily: 'Lexend',
                       ),
                     ),
                   );
@@ -975,7 +1006,7 @@ class __CollapsibleInstructionCardState
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 200),
     );
   }
 
@@ -1015,20 +1046,22 @@ class __CollapsibleInstructionCardState
                     backgroundColor: Colors.white24,
                     child: Text(
                       "${widget.stepNumber}",
-                      style: GoogleFonts.lexend(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Lexend',
                       ),
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       widget.stepHeader,
-                      style: GoogleFonts.lexend(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Lexend',
                       ),
                     ),
                   ),
@@ -1036,25 +1069,26 @@ class __CollapsibleInstructionCardState
                     children: [
                       // Step Duration
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Colors.white24,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
                           widget.stepDuration ?? "—",
-                          style: GoogleFonts.lexend(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       // Dropdown Indicator
                       RotationTransition(
                         turns: Tween(begin: 0.0, end: 0.5).animate(_animationController),
-                        child: Icon(
+                        child: const Icon(
                           Icons.expand_more,
                           color: Colors.white70,
                         ),
@@ -1064,13 +1098,14 @@ class __CollapsibleInstructionCardState
                 ],
               ),
               if (_isExpanded) ...[
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   widget.instructionText,
-                  style: GoogleFonts.lexend(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
+                    fontFamily: 'Lexend',
                   ),
                 ),
               ],
@@ -1116,10 +1151,11 @@ List<PieChartSectionData> _getPieChartSections(List<dynamic> nutrition, int touc
           ? "${protein.toStringAsFixed(0)}g (${((protein / total) * 100).toStringAsFixed(1)}%)"
           : "Protein",
       radius: touchedIndex == 0 ? 60 : 50,
-      titleStyle: GoogleFonts.lexend(
+      titleStyle: TextStyle(
         color: Colors.white,
         fontSize: touchedIndex == 0 ? 14 : 12,
         fontWeight: FontWeight.bold,
+        fontFamily: 'Lexend',
       ),
     ),
     PieChartSectionData(
@@ -1129,10 +1165,11 @@ List<PieChartSectionData> _getPieChartSections(List<dynamic> nutrition, int touc
           ? "${carbs.toStringAsFixed(0)}g (${((carbs / total) * 100).toStringAsFixed(1)}%)"
           : "Carbs",
       radius: touchedIndex == 1 ? 60 : 50,
-      titleStyle: GoogleFonts.lexend(
+      titleStyle: TextStyle(
         color: Colors.white,
         fontSize: touchedIndex == 1 ? 14 : 12,
         fontWeight: FontWeight.bold,
+        fontFamily: 'Lexend',
       ),
     ),
     PieChartSectionData(
@@ -1142,10 +1179,11 @@ List<PieChartSectionData> _getPieChartSections(List<dynamic> nutrition, int touc
           ? "${fat.toStringAsFixed(0)}g (${((fat / total) * 100).toStringAsFixed(1)}%)"
           : "Fat",
       radius: touchedIndex == 2 ? 60 : 50,
-      titleStyle: GoogleFonts.lexend(
+      titleStyle: TextStyle(
         color: Colors.white,
         fontSize: touchedIndex == 2 ? 14 : 12,
         fontWeight: FontWeight.bold,
+        fontFamily: 'Lexend',
       ),
     ),
   ];

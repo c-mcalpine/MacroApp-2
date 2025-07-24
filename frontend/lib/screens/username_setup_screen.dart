@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/auth_service.dart';
 
 class UsernameSetupScreen extends StatefulWidget {
@@ -13,10 +12,10 @@ class UsernameSetupScreen extends StatefulWidget {
   });
 
   @override
-  _UsernameSetupScreenState createState() => _UsernameSetupScreenState();
+  UsernameSetupScreenState createState() => UsernameSetupScreenState();
 }
 
-class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
+class UsernameSetupScreenState extends State<UsernameSetupScreen> {
   final TextEditingController _usernameController = TextEditingController();
   bool isLoading = false;
   String? errorMessage;
@@ -62,30 +61,32 @@ class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "Set Your Username",
-                style: GoogleFonts.lexend(
+                style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  fontFamily: 'Lexend',
                 ),
               ),
-              SizedBox(height: 12),
-              Text(
+              const SizedBox(height: 12),
+              const Text(
                 "Choose a username to personalize your experience",
-                style: GoogleFonts.lexend(
+                style: TextStyle(
                   fontSize: 16,
                   color: Colors.white70,
+                  fontFamily: 'Lexend',
                 ),
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               TextField(
                 controller: _usernameController,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: "Enter your username",
-                  hintStyle: TextStyle(color: Colors.white54),
-                  prefixIcon: Icon(Icons.person, color: Colors.white70),
+                  hintStyle: const TextStyle(color: Colors.white54),
+                  prefixIcon: const Icon(Icons.person, color: Colors.white70),
                   filled: true,
                   fillColor: Colors.white12,
                   border: OutlineInputBorder(
@@ -94,25 +95,26 @@ class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.white24),
+                    borderSide: const BorderSide(color: Colors.white24),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: Colors.deepOrange),
+                    borderSide: const BorderSide(color: Colors.deepOrange),
                   ),
                 ),
               ),
               if (errorMessage != null) ...[
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Text(
                   errorMessage!,
-                  style: GoogleFonts.lexend(
+                  style: const TextStyle(
                     color: Colors.redAccent,
                     fontSize: 14,
+                    fontFamily: 'Lexend',
                   ),
                 ),
               ],
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -123,11 +125,11 @@ class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    padding: EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
                   ),
                   child: isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
@@ -135,12 +137,13 @@ class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : Text(
+                      : const Text(
                           "Continue",
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                         ),
                 ),

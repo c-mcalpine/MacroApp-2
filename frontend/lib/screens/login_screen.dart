@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+  
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  LoginScreenState createState() => LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class LoginScreenState extends State<LoginScreen> {
   final _phoneController = TextEditingController();
   final _otpController = TextEditingController();
   final _usernameController = TextEditingController();
@@ -49,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _sendOTP() async {
     if (_phoneController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter your phone number')),
+        const SnackBar(content: Text('Please enter your phone number')),
       );
       return;
     }
@@ -57,29 +58,35 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final success = await AuthService.sendOTP(_fullPhoneNumber);
-      if (success) {
-        setState(() => _isOtpSent = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('OTP sent successfully')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send OTP')),
-        );
+      if (mounted) {
+        if (success) {
+          setState(() => _isOtpSent = true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('OTP sent successfully')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to send OTP')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _verifyOTP() async {
     if (_otpController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter the OTP')),
+        const SnackBar(content: Text('Please enter the OTP')),
       );
       return;
     }
@@ -91,29 +98,35 @@ class _LoginScreenState extends State<LoginScreen> {
         _otpController.text,
       );
 
-      if (result['success'] == true) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.login(_fullPhoneNumber, userName: result['user_name']);
-      } else if (result['code'] == 'need_username') {
-        setState(() => _showUsernameInput = true);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['error'] ?? 'Invalid OTP')),
-        );
+      if (mounted) {
+        if (result['success'] == true) {
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          await authProvider.login(_fullPhoneNumber, userName: result['user_name']);
+        } else if (result['code'] == 'need_username') {
+          setState(() => _showUsernameInput = true);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['error'] ?? 'Invalid OTP')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _completeSignup() async {
     if (_usernameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a username')),
+        const SnackBar(content: Text('Please enter a username')),
       );
       return;
     }
@@ -126,20 +139,26 @@ class _LoginScreenState extends State<LoginScreen> {
         username: _usernameController.text,
       );
 
-      if (result['success'] == true) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        await authProvider.login(_fullPhoneNumber, userName: result['user_name']);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['error'] ?? 'Failed to complete signup')),
-        );
+      if (mounted) {
+        if (result['success'] == true) {
+          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+          await authProvider.login(_fullPhoneNumber, userName: result['user_name']);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result['error'] ?? 'Failed to complete signup')),
+          );
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -157,37 +176,39 @@ class _LoginScreenState extends State<LoginScreen> {
               child: IntrinsicHeight(
                 child: SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Spacer(flex: 1),
-                        Icon(
+                        const Spacer(flex: 1),
+                        const Icon(
                           Icons.restaurant_menu,
                           size: 80,
                           color: Colors.deepOrange,
                         ),
-                        SizedBox(height: 24),
-                        Text(
+                        const SizedBox(height: 24),
+                        const Text(
                           'Welcome to Macro',
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
+                            fontFamily: 'Lexend',
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 8),
-                        Text(
+                        const SizedBox(height: 8),
+                        const Text(
                           'Your personal recipe companion',
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 16,
                             color: Colors.white70,
+                            fontFamily: 'Lexend',
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 48),
+                        const SizedBox(height: 48),
                         if (!_showUsernameInput) ...[
                           Row(
                             children: [
@@ -196,13 +217,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Colors.white12,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: DropdownButton<String>(
                                   value: _selectedCountryCode,
                                   dropdownColor: Colors.grey[900],
-                                  style: TextStyle(color: Colors.white),
-                                  icon: Icon(Icons.arrow_drop_down, color: Colors.white70),
-                                  underline: SizedBox(),
+                                  style: const TextStyle(color: Colors.white),
+                                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
+                                  underline: const SizedBox(),
                                   items: _countryCodes.map((country) {
                                     return DropdownMenuItem(
                                       value: country['code'],
@@ -216,14 +237,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: TextField(
                                   controller: _phoneController,
-                                  style: TextStyle(color: Colors.white),
+                                  style: const TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
                                     hintText: 'Phone Number',
-                                    hintStyle: TextStyle(color: Colors.white54),
+                                    hintStyle: const TextStyle(color: Colors.white54),
                                     filled: true,
                                     fillColor: Colors.white12,
                                     border: OutlineInputBorder(
@@ -238,14 +259,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                           if (_isOtpSent) ...[
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             TextField(
                               controller: _otpController,
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'Enter OTP',
-                                hintStyle: TextStyle(color: Colors.white54),
-                                prefixIcon: Icon(Icons.lock, color: Colors.white70),
+                                hintStyle: const TextStyle(color: Colors.white54),
+                                prefixIcon: const Icon(Icons.lock, color: Colors.white70),
                                 filled: true,
                                 fillColor: Colors.white12,
                                 border: OutlineInputBorder(
@@ -259,11 +280,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ] else ...[
                           TextField(
                             controller: _usernameController,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               hintText: 'Choose a username',
-                              hintStyle: TextStyle(color: Colors.white54),
-                              prefixIcon: Icon(Icons.person, color: Colors.white70),
+                              hintStyle: const TextStyle(color: Colors.white54),
+                              prefixIcon: const Icon(Icons.person, color: Colors.white70),
                               filled: true,
                               fillColor: Colors.white12,
                               border: OutlineInputBorder(
@@ -273,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ],
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: _isLoading ? null : () {
                             if (_showUsernameInput) {
@@ -286,13 +307,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.deepOrange,
-                            padding: EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           child: _isLoading
-                              ? SizedBox(
+                              ? const SizedBox(
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
@@ -304,22 +325,24 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _showUsernameInput
                                       ? 'Complete Signup'
                                       : (_isOtpSent ? 'Verify OTP' : 'Send OTP'),
-                                  style: GoogleFonts.lexend(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily: 'Lexend',
                                   ),
                                 ),
                         ),
-                        SizedBox(height: 24),
-                        Text(
+                        const SizedBox(height: 24),
+                        const Text(
                           'By continuing, you agree to our Terms of Service and Privacy Policy',
-                          style: GoogleFonts.lexend(
+                          style: TextStyle(
                             fontSize: 12,
                             color: Colors.white54,
+                            fontFamily: 'Lexend',
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        Spacer(flex: 2),
+                        const Spacer(flex: 2),
                       ],
                     ),
                   ),

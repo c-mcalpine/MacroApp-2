@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RecipeSectionScreen extends StatefulWidget {
   final String sectionTitle;
@@ -7,10 +6,10 @@ class RecipeSectionScreen extends StatefulWidget {
   const RecipeSectionScreen({super.key, required this.sectionTitle, required this.filters});
 
   @override
-  _RecipeSectionScreenState createState() => _RecipeSectionScreenState();
+  RecipeSectionScreenState createState() => RecipeSectionScreenState();
 }
 
-class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
+class RecipeSectionScreenState extends State<RecipeSectionScreen> {
   late List<bool> selectedFilters;
 
   @override
@@ -27,20 +26,21 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           widget.sectionTitle,
-          style: GoogleFonts.lexend(
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w500,
             color: Colors.white,
+            fontFamily: 'Lexend',
           ),
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -53,15 +53,16 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                     child: ChoiceChip(
                       label: Text(
                         widget.filters[index],
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           color: selectedFilters[index] ? Colors.black : Colors.white,
                           fontSize: 14,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                       selected: selectedFilters[index],
                       selectedColor: Colors.white,
                       backgroundColor: Colors.black,
-                      shape: StadiumBorder(side: BorderSide(color: Colors.white)),
+                      shape: const StadiumBorder(side: BorderSide(color: Colors.white)),
                       onSelected: (bool selected) {
                         setState(() {
                           selectedFilters[index] = selected;
@@ -76,9 +77,10 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
               child: Center(
                 child: Text(
                   "${widget.sectionTitle} Recipes Coming Soon...",
-                  style: GoogleFonts.lexend(
+                  style: const TextStyle(
                     fontSize: 18,
                     color: Colors.white,
+                    fontFamily: 'Lexend',
                   ),
                 ),
               ),

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
 import '../widgets/common/network_image_widget.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({Key? key}) : super(key: key);
+  
   @override
-  _SearchScreenState createState() => _SearchScreenState();
+  SearchScreenState createState() => SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class SearchScreenState extends State<SearchScreen> {
   String _searchQuery = '';
   String _selectedSortMetric = 'newest';
-  List<String> _selectedCuisines = [];
-  List<String> _selectedTags = [];
-  RangeValues _proteinRatioRange = RangeValues(0, 1);
-  RangeValues _priceRange = RangeValues(0, 50);
+  final List<String> _selectedCuisines = [];
+  final List<String> _selectedTags = [];
+  RangeValues _proteinRatioRange = const RangeValues(0, 1);
+  RangeValues _priceRange = const RangeValues(0, 50);
   Future<List<dynamic>>? _searchResults;
 
   @override
@@ -148,16 +149,16 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             // Search Header
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
                   // Search Bar
                   TextField(
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: "Search recipes...",
-                      hintStyle: TextStyle(color: Colors.white54),
-                      prefixIcon: Icon(Icons.search, color: Colors.white),
+                      hintStyle: const TextStyle(color: Colors.white54),
+                      prefixIcon: const Icon(Icons.search, color: Colors.white),
                       filled: true,
                       fillColor: Colors.white12,
                       border: OutlineInputBorder(
@@ -172,7 +173,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       });
                     },
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   
                   // Sort Options
                   SingleChildScrollView(
@@ -180,11 +181,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Row(
                       children: [
                         _buildSortChip('Newest'),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         _buildSortChip('Protein/Cal Ratio'),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         _buildSortChip('Cost/Protein'),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         _buildSortChip('Meal Prep Score'),
                       ],
                     ),
@@ -195,13 +196,13 @@ class _SearchScreenState extends State<SearchScreen> {
 
             // Filters Section
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
                   // Protein/Calorie Ratio Slider
-                  Text(
+                  const Text(
                     "Protein/Calorie Ratio",
-                    style: GoogleFonts.lexend(
+                    style: TextStyle(
                       fontSize: 16,
                       color: Colors.white,
                     ),
@@ -224,9 +225,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
 
                   // Price Range Slider
-                  Text(
+                  const Text(
                     "Price Range (\$)",
-                    style: GoogleFonts.lexend(
+                    style: TextStyle(
                       fontSize: 16,
                       color: Colors.white,
                     ),
@@ -257,30 +258,30 @@ class _SearchScreenState extends State<SearchScreen> {
                 future: _searchResults,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator(color: Colors.deepOrange));
+                    return const Center(child: CircularProgressIndicator(color: Colors.deepOrange));
                   }
                   
                   if (snapshot.hasError) {
-                    return Center(
+                    return const Center(
                       child: Text(
                         "Error loading recipes",
-                        style: GoogleFonts.lexend(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                       ),
                     );
                   }
 
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Text(
                         "No recipes found",
-                        style: GoogleFonts.lexend(color: Colors.white),
+                        style: TextStyle(color: Colors.white, fontFamily: 'Lexend'),
                       ),
                     );
                   }
 
                   return GridView.builder(
-                    padding: EdgeInsets.all(16),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 0.75,
                       crossAxisSpacing: 16,
@@ -306,9 +307,10 @@ class _SearchScreenState extends State<SearchScreen> {
     return ChoiceChip(
       label: Text(
         label,
-        style: GoogleFonts.lexend(
+        style: TextStyle(
           color: _selectedSortMetric == key ? Colors.black : Colors.white,
           fontSize: 14,
+          fontFamily: 'Lexend',
         ),
       ),
       selected: _selectedSortMetric == key,
@@ -354,7 +356,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
                 ),
               ),
             ),
@@ -369,21 +371,23 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   Text(
                     recipe['name'] ?? '',
-                    style: GoogleFonts.lexend(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      fontFamily: 'Lexend',
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (recipe['nutrition'] != null) ...[
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       "${recipe['nutrition']['protein']}g protein",
-                      style: GoogleFonts.lexend(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white70,
+                        fontFamily: 'Lexend',
                       ),
                     ),
                   ],

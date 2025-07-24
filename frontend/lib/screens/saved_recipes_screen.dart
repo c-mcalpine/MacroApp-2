@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/screens/list_details_screen.dart';
 import '../widgets/common/network_image_widget.dart';
 
@@ -13,10 +12,10 @@ class SavedRecipesScreen extends StatefulWidget {
   });
 
   @override
-  _SavedRecipesScreenState createState() => _SavedRecipesScreenState();
+  SavedRecipesScreenState createState() => SavedRecipesScreenState();
 }
 
-class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
+class SavedRecipesScreenState extends State<SavedRecipesScreen> {
   void _navigateToListDetails(String listName) {
     Navigator.push(
       context,
@@ -33,34 +32,35 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Saved Recipes",
-          style: GoogleFonts.lexend(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Colors.white, fontSize: 24, fontFamily: 'Lexend'),
         ),
         backgroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hearted Recipes Section
-            Text(
+            const Text(
               "Hearted Recipes",
-              style: GoogleFonts.lexend(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
+                fontFamily: 'Lexend',
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             SizedBox(
               height: 200,
               child: widget.heartedRecipes.isEmpty
-                  ? Center(
+                  ? const Center(
                       child: Text(
                         "No hearted recipes yet.",
-                        style: GoogleFonts.lexend(color: Colors.white70),
+                        style: TextStyle(color: Colors.white70, fontFamily: 'Lexend'),
                       ),
                     )
                   : ListView.builder(
@@ -70,13 +70,13 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
                         var recipe = widget.heartedRecipes[index];
                         return Card(
                           color: Colors.white10,
-                          margin: EdgeInsets.only(right: 16),
+                          margin: const EdgeInsets.only(right: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Container(
                             width: 150,
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -92,18 +92,19 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 8),
+                                const SizedBox(height: 8),
                                 Text(
                                   recipe['name'],
-                                  style: GoogleFonts.lexend(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
+                                    fontFamily: 'Lexend',
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                SizedBox(height: 4),
-                                Icon(Icons.favorite, color: Colors.red, size: 20),
+                                const SizedBox(height: 4),
+                                const Icon(Icons.favorite, color: Colors.red, size: 20),
                               ],
                             ),
                           ),
@@ -111,50 +112,52 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
                       },
                     ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Custom Lists Section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   "My Lists",
-                  style: GoogleFonts.lexend(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
+                    fontFamily: 'Lexend',
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.add, color: Colors.white),
+                  icon: const Icon(Icons.add, color: Colors.white),
                   onPressed: () {
                     _showCreateListDialog();
                   },
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.customLists.keys.length,
               itemBuilder: (context, index) {
                 String listName = widget.customLists.keys.elementAt(index);
                 return Card(
                   color: Colors.white10,
-                  margin: EdgeInsets.symmetric(vertical: 8),
+                                      margin: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
                     title: Text(
                       listName,
-                      style: GoogleFonts.lexend(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Lexend',
                       ),
                     ),
-                    trailing: Icon(Icons.arrow_forward, color: Colors.white),
+                    trailing: const Icon(Icons.arrow_forward, color: Colors.white),
                     onTap: () => _navigateToListDetails(listName),
                   ),
                 );
@@ -173,12 +176,12 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
       builder: (context) {
         String? newListName;
         return AlertDialog(
-          title: Text(
+          title: const Text(
             "Create New List",
-            style: GoogleFonts.lexend(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend'),
           ),
           content: TextField(
-            decoration: InputDecoration(hintText: "Enter list name"),
+            decoration: const InputDecoration(hintText: "Enter list name"),
             onChanged: (value) {
               newListName = value;
             },
@@ -186,7 +189,7 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
+              child: const Text("Cancel"),
             ),
             TextButton(
               onPressed: () {
@@ -197,7 +200,7 @@ class _SavedRecipesScreenState extends State<SavedRecipesScreen> {
                 }
                 Navigator.pop(context);
               },
-              child: Text("Create"),
+              child: const Text("Create"),
             ),
           ],
         );

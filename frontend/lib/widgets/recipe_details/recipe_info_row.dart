@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RecipeInfoRow extends StatelessWidget {
   final Map<String, dynamic> recipe;
@@ -11,8 +10,8 @@ class RecipeInfoRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text("⏳ ${recipe['total_time']} min", style: GoogleFonts.lexend(fontSize: 18, color: Colors.white)),
-        Text("🍽 ${recipe['servings']} servings", style: GoogleFonts.lexend(fontSize: 18, color: Colors.white)),
+        Text("⏳ ${recipe['total_time']} min", style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Lexend')),
+        Text("🍽 ${recipe['servings']} servings", style: TextStyle(fontSize: 18, color: Colors.white, fontFamily: 'Lexend')),
       ],
     );
   }

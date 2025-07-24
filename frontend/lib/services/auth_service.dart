@@ -3,11 +3,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import '../providers/auth_provider.dart';
 import 'api_client.dart';
 
 class AuthService {
-  static final String baseUrl = const String.fromEnvironment('API_BASE_URL');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL');
   static const String _tokenKey = 'auth_token';
   static const String _userIdKey = 'user_id';
   static const String _userNameKey = 'user_name';
@@ -19,6 +20,7 @@ class AuthService {
   static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  static final Logger _logger = Logger();
 
   // Initialize shared preferences
   static Future<SharedPreferences> get _prefs async => await SharedPreferences.getInstance();
@@ -36,7 +38,7 @@ class AuthService {
       // TODO: Add token validation if needed
       return true;
     } catch (e) {
-      print('Error checking authentication: $e');
+      _logger.e('Error checking authentication: $e');
       return false;
     }
   }
@@ -49,7 +51,7 @@ class AuthService {
     try {
       return json.decode(authDataString) as Map<String, dynamic>;
     } catch (e) {
-      print('Error getting auth data: $e');
+      _logger.e('Error getting auth data: $e');
       return null;
     }
   }
@@ -89,7 +91,7 @@ class AuthService {
       
       return response;
     } catch (e) {
-      print('Error verifying OTP: $e');
+      _logger.e('Error verifying OTP: $e');
       return {'success': false, 'error': 'Failed to verify OTP'};
     }
   }
@@ -104,7 +106,7 @@ class AuthService {
     
     // Update AuthProvider
     final context = navigatorKey.currentContext;
-    if (context != null) {
+    if (context != null && context.mounted) {
       Provider.of<AuthProvider>(context, listen: false).logout();
     }
   }
@@ -124,7 +126,7 @@ class AuthService {
         "Authorization": "Bearer $token",
       };
     } catch (e) {
-      print('Error getting auth headers: $e');
+      _logger.e('Error getting auth headers: $e');
       return {"Content-Type": "application/json"};
     }
   }
@@ -170,7 +172,7 @@ class AuthService {
       final response = await ApiClient.sendOTP(phoneNumber);
       return response['success'] == true;
     } catch (e) {
-      print('Error sending OTP: $e');
+      _logger.e('Error sending OTP: $e');
       return false;
     }
   }
@@ -195,7 +197,7 @@ class AuthService {
       
       return response;
     } catch (e) {
-      print('Error updating username: $e');
+      _logger.e('Error updating username: $e');
       return {'success': false, 'error': 'Failed to update username'};
     }
   }

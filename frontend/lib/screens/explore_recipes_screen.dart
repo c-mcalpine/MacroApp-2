@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import '../widgets/common/network_image_widget.dart';
 
@@ -12,10 +10,10 @@ class ExploreRecipesScreen extends StatefulWidget {
   const ExploreRecipesScreen({super.key, required this.onRecipeSelected});
 
   @override
-  _ExploreRecipesScreenState createState() => _ExploreRecipesScreenState();
+  ExploreRecipesScreenState createState() => ExploreRecipesScreenState();
 }
 
-class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with TickerProviderStateMixin {
+class ExploreRecipesScreenState extends State<ExploreRecipesScreen> with TickerProviderStateMixin {
   final List<String> filters = [
     "Recently Added",
     "Popular",
@@ -58,17 +56,17 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
 
   String _searchQuery = '';
   String _selectedSortMetric = 'newest'; // Default sort
-  List<String> _selectedCuisines = [];
-  List<String> _selectedTags = [];
-  RangeValues _proteinRatioRange = RangeValues(0, 1); // Protein/Calorie ratio range
-  RangeValues _priceRange = RangeValues(0, 50); // Price range in dollars
+  final List<String> _selectedCuisines = [];
+  final List<String> _selectedTags = [];
+  RangeValues _proteinRatioRange = const RangeValues(0, 1); // Protein/Calorie ratio range
+  RangeValues _priceRange = const RangeValues(0, 50); // Price range in dollars
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
     );
     _opacityAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     
@@ -173,15 +171,16 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
         return FilterChip(
           label: Text(
             label,
-            style: GoogleFonts.lexend(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
+              fontFamily: 'Lexend',
             ),
           ),
           selected: activeFilters.contains(key),
           selectedColor: isExclusion ? Colors.red : Colors.deepOrange,
           backgroundColor: Colors.grey[800],
-          shape: StadiumBorder(side: BorderSide(color: Colors.white)),
+          shape: const StadiumBorder(side: BorderSide(color: Colors.white)),
           onSelected: (bool selected) {
             setState(() {
               if (selected) {
@@ -201,7 +200,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
@@ -213,15 +212,16 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
+                  const Text(
                     "Filter Options",
-                    style: GoogleFonts.lexend(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
+                      fontFamily: 'Lexend',
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Wrap(
                     spacing: 8,
                     children: filterOptions.map((option) {
@@ -270,7 +270,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
       context: context,
       backgroundColor: Colors.black,
       isScrollControlled: true,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) {
@@ -282,36 +282,37 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
               maxChildSize: 0.9,
               builder: (_, controller) {
                 return Container(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "Advanced Search",
-                            style: GoogleFonts.lexend(
+                            style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
+                              fontFamily: 'Lexend',
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close, color: Colors.white),
+                            icon: const Icon(Icons.close, color: Colors.white),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ],
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       
                       // Search Bar
                       TextField(
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: "Search recipes...",
-                          hintStyle: TextStyle(color: Colors.white54),
-                          prefixIcon: Icon(Icons.search, color: Colors.white),
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          prefixIcon: const Icon(Icons.search, color: Colors.white),
                           filled: true,
                           fillColor: Colors.white12,
                           border: OutlineInputBorder(
@@ -323,44 +324,45 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                           setState(() => _searchQuery = value);
                         },
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
                       // Sort By
-                      Text(
+                      const Text(
                         "Sort By",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          fontFamily: 'Lexend',
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         children: [
                           ChoiceChip(
-                            label: Text('Newest'),
+                            label: const Text('Newest'),
                             selected: _selectedSortMetric == 'newest',
                             onSelected: (selected) {
                               setState(() => _selectedSortMetric = 'newest');
                             },
                           ),
                           ChoiceChip(
-                            label: Text('Protein/Cal Ratio'),
+                            label: const Text('Protein/Cal Ratio'),
                             selected: _selectedSortMetric == 'protein_ratio',
                             onSelected: (selected) {
                               setState(() => _selectedSortMetric = 'protein_ratio');
                             },
                           ),
                           ChoiceChip(
-                            label: Text('Cost/Protein'),
+                            label: const Text('Cost/Protein'),
                             selected: _selectedSortMetric == 'cost_protein',
                             onSelected: (selected) {
                               setState(() => _selectedSortMetric = 'cost_protein');
                             },
                           ),
                           ChoiceChip(
-                            label: Text('Meal Prep Score'),
+                            label: const Text('Meal Prep Score'),
                             selected: _selectedSortMetric == 'meal_prep_score',
                             onSelected: (selected) {
                               setState(() => _selectedSortMetric = 'meal_prep_score');
@@ -368,15 +370,16 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                           ),
                         ],
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
                       // Protein/Calorie Ratio Range
-                      Text(
+                      const Text(
                         "Protein/Calorie Ratio",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                       RangeSlider(
@@ -394,12 +397,13 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                       ),
                       
                       // Price Range
-                      Text(
+                      const Text(
                         "Price Range (\$)",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                       RangeSlider(
@@ -417,13 +421,13 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                       ),
 
                       // Apply Button
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.deepOrange,
-                            padding: EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -432,12 +436,13 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                             _applyAdvancedSearch();
                             Navigator.pop(context);
                           },
-                          child: Text(
+                          child: const Text(
                             "Apply Filters",
-                            style: GoogleFonts.lexend(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
+                              fontFamily: 'Lexend',
                             ),
                           ),
                         ),
@@ -573,16 +578,17 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
+            const Text(
               "macro.",
-              style: GoogleFonts.lexend(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
+                fontFamily: 'Lexend',
               ),
             ),
             IconButton(
-              icon: Icon(Icons.search, color: Colors.white),
+              icon: const Icon(Icons.search, color: Colors.white),
               onPressed: _showAdvancedSearch,
             ),
           ],
@@ -591,15 +597,15 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
       body: Stack(
         children: [
           ListView(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
               // Persistent Filter Pills with Filter Button
               Container(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.filter_list, color: Colors.white),
+                      icon: const Icon(Icons.filter_list, color: Colors.white),
                       onPressed: openFilterModal,
                     ),
                     Expanded(
@@ -612,15 +618,16 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                               child: ChoiceChip(
                                 label: Text(
                                   filters[index],
-                                  style: GoogleFonts.lexend(
+                                  style: TextStyle(
                                     color: selectedFilters[index] ? Colors.black : Colors.white,
                                     fontSize: 14,
+                                    fontFamily: 'Lexend',
                                   ),
                                 ),
                                 selected: selectedFilters[index],
                                 selectedColor: Colors.white,
                                 backgroundColor: Colors.black,
-                                shape: StadiumBorder(side: BorderSide(color: Colors.white)),
+                                shape: const StadiumBorder(side: BorderSide(color: Colors.white)),
                                 onSelected: (bool selected) {
                                   setState(() {
                                     selectedFilters[index] = selected;
@@ -659,21 +666,22 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               Container(
-                                padding: EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(8),
                                 alignment: Alignment.bottomLeft,
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
                                   ),
                                 ),
                                 child: Text(
                                   promos[index]['title']!,
-                                  style: GoogleFonts.lexend(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
+                                    fontFamily: 'Lexend',
                                   ),
                                 ),
                               ),
@@ -685,33 +693,35 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                   },
                 ),
               ),
-              SizedBox(height: 24),
+              const SizedBox(height: 24),
               // Fetch and Display Recipes by Section
               FutureBuilder<List<dynamic>>(
                 future: recipes,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(
+                    return const Center(
                       child: Text(
                         "An error occurred while loading recipes. Please try again later.",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Lexend',
                         ),
                         textAlign: TextAlign.center,
                       ),
                     );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Text(
                         "No recipes available at the moment.",
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,
                           fontWeight: FontWeight.w500,
+                          fontFamily: 'Lexend',
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -753,17 +763,18 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                   children: [
                                     Text(
                                       entry.key,
-                                      style: GoogleFonts.lexend(
+                                      style: const TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
+                                        fontFamily: 'Lexend',
                                       ),
                                     ),
-                                    Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+                                    const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
                                   ],
                                 ),
                               ),
-                              SizedBox(height: 12),
+                              const SizedBox(height: 12),
                               SizedBox(
                                 height: 220, // Fixed height for the carousel
                                 child: ListView.builder(
@@ -773,7 +784,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                     var recipe = entry.value[recipeIndex];
                                     return Container(
                                       width: 160, // Fixed width for each recipe card
-                                      margin: EdgeInsets.only(right: 12),
+                                      margin: const EdgeInsets.only(right: 12),
                                       child: GestureDetector(
                                         onTap: () => navigateToRecipe(recipe['recipe_id']),
                                         child: Stack(
@@ -799,7 +810,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                                   gradient: LinearGradient(
                                                     begin: Alignment.topCenter,
                                                     end: Alignment.bottomCenter,
-                                                    colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                                                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
                                                   ),
                                                 ),
                                               ),
@@ -811,7 +822,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                               right: 12,
                                               child: Text(
                                                 recipe['short_name'] ?? recipe['name'],
-                                                style: GoogleFonts.lexend(
+                                                style: const TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white,
@@ -822,6 +833,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                                       color: Colors.black,
                                                     ),
                                                   ],
+                                                  fontFamily: 'Lexend',
                                                 ),
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
@@ -835,17 +847,18 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                                                 crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: (recipe['tags'] as List<dynamic>? ?? []).take(2).map((tag) {
                                                   return Container(
-                                                    margin: EdgeInsets.only(bottom: 4),
-                                                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                    margin: const EdgeInsets.only(bottom: 4),
+                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                                     decoration: BoxDecoration(
                                                       color: _getTagColor(tag['tag_name'] ?? "Unknown"),
                                                       borderRadius: BorderRadius.circular(4),
                                                     ),
                                                     child: Text(
                                                       tag['tag_name'] ?? '',
-                                                      style: GoogleFonts.lexend(
+                                                      style: const TextStyle(
                                                         fontSize: 10,
                                                         color: Colors.white,
+                                                        fontFamily: 'Lexend',
                                                       ),
                                                     ),
                                                   );
@@ -875,7 +888,7 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
               child: GestureDetector(
                 onTap: toggleProfile,
                 child: AnimatedOpacity(
-                  duration: Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 300),
                   opacity: isProfileOpen ? 0.5 : 0.0,
                   child: Container(
                     color: Colors.black,
@@ -895,39 +908,39 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
                   child: Container(
                     width: 300,
                     color: Colors.black,
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(height: 16),
-                        CircleAvatar(
+                        const SizedBox(height: 16),
+                        const CircleAvatar(
                           radius: 50,
                           backgroundColor: Colors.white24,
                           child: Icon(Icons.person, size: 50, color: Colors.white),
                         ),
-                        SizedBox(height: 12),
-                        Text(
+                        const SizedBox(height: 12),
+                        const Text(
                           "User Name",
-                          style: GoogleFonts.lexend(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold, fontFamily: 'Lexend'),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         GestureDetector(
                           onTap: () {},
-                          child: Text(
+                          child: const Text(
                             "View Profile",
-                            style: GoogleFonts.lexend(fontSize: 16, color: Colors.deepOrange),
+                            style: TextStyle(fontSize: 16, color: Colors.deepOrange, fontFamily: 'Lexend'),
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        Divider(color: Colors.white24, thickness: 1, height: 24),
+                        const Divider(color: Colors.white24, thickness: 1, height: 24),
                         _buildProfileOption(Icons.tune, "Preferences"),
                         _buildProfileOption(Icons.history, "Recipe History"),
                         _buildProfileOption(Icons.people, "Refer a Friend"),
                         _buildProfileOption(Icons.help_outline, "Help"),
                         _buildProfileOption(Icons.settings, "Settings"),
                         _buildProfileOption(Icons.menu_book, "Blog"),
-                        Divider(color: Colors.white24, thickness: 1, height: 24),
+                        const Divider(color: Colors.white24, thickness: 1, height: 24),
                       ],
                     ),
                   ),
@@ -946,10 +959,10 @@ class _ExploreRecipesScreenState extends State<ExploreRecipesScreen> with Ticker
       child: Row(
         children: [
           Icon(icon, color: Colors.white, size: 24),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Text(
             title,
-            style: GoogleFonts.lexend(fontSize: 16, color: Colors.white),
+            style: const TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Lexend'),
           ),
         ],
       ),
@@ -979,10 +992,10 @@ class RecipeSectionScreen extends StatefulWidget {
   const RecipeSectionScreen({super.key, required this.sectionTitle, required this.filters});
 
   @override
-  _RecipeSectionScreenState createState() => _RecipeSectionScreenState();
+  RecipeSectionScreenState createState() => RecipeSectionScreenState();
 }
 
-class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
+class RecipeSectionScreenState extends State<RecipeSectionScreen> {
   late List<bool> selectedFilters;
   late Future<List<dynamic>> sectionRecipes;
 
@@ -1010,20 +1023,21 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 24),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           widget.sectionTitle,
-          style: GoogleFonts.lexend(
+          style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w500,
             color: Colors.white,
+            fontFamily: 'Lexend',
           ),
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1036,15 +1050,16 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                     child: ChoiceChip(
                       label: Text(
                         widget.filters[index],
-                        style: GoogleFonts.lexend(
+                        style: TextStyle(
                           color: selectedFilters[index] ? Colors.black : Colors.white,
                           fontSize: 14,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                       selected: selectedFilters[index],
                       selectedColor: Colors.white,
                       backgroundColor: Colors.black,
-                      shape: StadiumBorder(side: BorderSide(color: Colors.white)),
+                      shape: const StadiumBorder(side: BorderSide(color: Colors.white)),
                       onSelected: (bool selected) {
                         setState(() {
                           selectedFilters[index] = selected;
@@ -1055,13 +1070,13 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                 }),
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             TextField(
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: "Search ${widget.sectionTitle} recipes...",
-                hintStyle: TextStyle(color: Colors.white54),
-                prefixIcon: Icon(Icons.search, color: Colors.white),
+                hintStyle: const TextStyle(color: Colors.white54),
+                prefixIcon: const Icon(Icons.search, color: Colors.white),
                 filled: true,
                 fillColor: Colors.white12,
                 border: OutlineInputBorder(
@@ -1070,15 +1085,15 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Expanded(
               child: FutureBuilder<List<dynamic>>(
                 future: sectionRecipes,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(
+                    return const Center(
                       child: Text(
                         "Error loading recipes",
                         style: TextStyle(color: Colors.white),
@@ -1088,15 +1103,16 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                     return Center(
                       child: Text(
                         "No recipes available for ${widget.sectionTitle}",
-                        style: GoogleFonts.lexend(
+                        style: const TextStyle(
                           fontSize: 18,
                           color: Colors.white,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                     );
                   } else {
                     return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
@@ -1138,7 +1154,7 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                                     gradient: LinearGradient(
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
-                                      colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
                                     ),
                                   ),
                                 ),
@@ -1149,7 +1165,7 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                                 right: 8,
                                 child: Text(
                                   recipe['name'] ?? '',
-                                  style: GoogleFonts.lexend(
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -1160,6 +1176,7 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                                         color: Colors.black,
                                       ),
                                     ],
+                                    fontFamily: 'Lexend',
                                   ),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
@@ -1173,17 +1190,18 @@ class _RecipeSectionScreenState extends State<RecipeSectionScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: (recipe['tags'] as List<dynamic>? ?? []).map((tag) {
                                     return Container(
-                                      margin: EdgeInsets.only(bottom: 4),
-                                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      margin: const EdgeInsets.only(bottom: 4),
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: _getTagColor(tag['tag_name'] ?? "Unknown"),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
                                         tag['tag_name'] ?? '',
-                                        style: GoogleFonts.lexend(
+                                        style: const TextStyle(
                                           fontSize: 10,
                                           color: Colors.white,
+                                          fontFamily: 'Lexend',
                                         ),
                                       ),
                                     );

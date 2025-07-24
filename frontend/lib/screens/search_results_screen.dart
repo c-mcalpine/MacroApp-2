@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
 
@@ -7,10 +6,10 @@ class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({super.key});
 
   @override
-  _SearchResultsScreenState createState() => _SearchResultsScreenState();
+  SearchResultsScreenState createState() => SearchResultsScreenState();
 }
 
-class _SearchResultsScreenState extends State<SearchResultsScreen> {
+class SearchResultsScreenState extends State<SearchResultsScreen> {
   String query = "";
   late Future<List<dynamic>> searchResults;
 
@@ -49,13 +48,13 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
         title: TextField(
           autofocus: true,
-          style: TextStyle(color: Colors.white),
-          decoration: InputDecoration(
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
             hintText: "Search recipes...",
             hintStyle: TextStyle(color: Colors.white54),
             border: InputBorder.none,
@@ -67,15 +66,16 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
         future: searchResults,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(
+            return const Center(
               child: Text(
                 "An error occurred while searching. Please try again later.",
-                style: GoogleFonts.lexend(
+                style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
+                  fontFamily: 'Lexend',
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -84,17 +84,18 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
             return Center(
               child: Text(
                 "No recipes found for \"$query\".",
-                style: GoogleFonts.lexend(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
+                  fontFamily: 'Lexend',
                 ),
                 textAlign: TextAlign.center,
               ),
             );
           } else {
             return ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 var recipe = snapshot.data![index];
@@ -102,7 +103,7 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                   onTap: () => navigateToRecipe(recipe['recipe_id']),
                   child: Card(
                     color: Colors.white10,
-                    margin: EdgeInsets.only(bottom: 16),
+                    margin: const EdgeInsets.only(bottom: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -118,16 +119,18 @@ class _SearchResultsScreenState extends State<SearchResultsScreen> {
                       ),
                       title: Text(
                         recipe['name'],
-                        style: GoogleFonts.lexend(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          fontFamily: 'Lexend',
                         ),
                       ),
                       subtitle: Text(
                         recipe['short_description'] ?? "",
-                        style: GoogleFonts.lexend(
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
+                          fontFamily: 'Lexend',
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

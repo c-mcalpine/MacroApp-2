@@ -1,9 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../config/app_config.dart';
+import 'package:logger/logger.dart';
 
 class SupabaseService {
   static SupabaseClient? _client;
   static bool _isInitialized = false;
+  static final Logger _logger = Logger();
   
   // Initialize Supabase client
   static Future<void> initialize() async {
@@ -16,12 +17,12 @@ class SupabaseService {
       // Test the connection
       try {
         final response = await _client!.from('users').select().limit(1);
-        print('Successfully connected to Supabase. Test query response: $response');
+        _logger.i('Successfully connected to Supabase. Test query response: $response');
       } catch (e) {
-        print('Connected to Supabase but test query failed: $e');
+        _logger.w('Connected to Supabase but test query failed: $e');
       }
     } catch (e) {
-      print('Error initializing Supabase: $e');
+      _logger.e('Error initializing Supabase: $e');
       _isInitialized = false;
     }
   }
@@ -45,9 +46,9 @@ class SupabaseService {
       return response;
     } catch (e) {
       if (e.toString().contains('relation "users" does not exist')) {
-        print('ERROR: The users table does not exist in your Supabase database.');
-        print('Please create the table in your Supabase dashboard with the following SQL:');
-        print('''
+        _logger.e('ERROR: The users table does not exist in your Supabase database.');
+        _logger.e('Please create the table in your Supabase dashboard with the following SQL:');
+        _logger.e('''
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   phone_number TEXT UNIQUE NOT NULL,
@@ -56,7 +57,7 @@ CREATE TABLE users (
 );
 ''');
       } else {
-        print('Error getting user by phone: $e');
+        _logger.e('Error getting user by phone: $e');
       }
       return null;
     }
@@ -77,11 +78,11 @@ CREATE TABLE users (
       return response;
     } catch (e) {
       if (e.toString().contains('duplicate key value violates unique constraint')) {
-        print('ERROR: A user with this phone number already exists.');
+        _logger.e('ERROR: A user with this phone number already exists.');
       } else if (e.toString().contains('relation "users" does not exist')) {
-        print('ERROR: The users table does not exist in your Supabase database.');
-        print('Please create the table in your Supabase dashboard with the following SQL:');
-        print('''
+        _logger.e('ERROR: The users table does not exist in your Supabase database.');
+        _logger.e('Please create the table in your Supabase dashboard with the following SQL:');
+        _logger.e('''
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   phone_number TEXT UNIQUE NOT NULL,
@@ -90,7 +91,7 @@ CREATE TABLE users (
 );
 ''');
       } else {
-        print('Error creating user: $e');
+        _logger.e('Error creating user: $e');
       }
       return null;
     }
@@ -112,9 +113,9 @@ CREATE TABLE users (
       return response;
     } catch (e) {
       if (e.toString().contains('relation "users" does not exist')) {
-        print('ERROR: The users table does not exist in your Supabase database.');
-        print('Please create the table in your Supabase dashboard with the following SQL:');
-        print('''
+        _logger.e('ERROR: The users table does not exist in your Supabase database.');
+        _logger.e('Please create the table in your Supabase dashboard with the following SQL:');
+        _logger.e('''
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   phone_number TEXT UNIQUE NOT NULL,
@@ -123,7 +124,7 @@ CREATE TABLE users (
 );
 ''');
       } else {
-        print('Error updating user name: $e');
+        _logger.e('Error updating user name: $e');
       }
       return null;
     }
@@ -139,7 +140,7 @@ CREATE TABLE users (
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
-        print('User not found for phone number: $userId');
+        _logger.w('User not found for phone number: $userId');
         return [];
       }
       
@@ -150,7 +151,7 @@ CREATE TABLE users (
       
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error getting hearted recipes: $e');
+      _logger.e('Error getting hearted recipes: $e');
       return [];
     }
   }
@@ -164,7 +165,7 @@ CREATE TABLE users (
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
-        print('User not found for phone number: $userId');
+        _logger.w('User not found for phone number: $userId');
         return false;
       }
       
@@ -178,7 +179,7 @@ CREATE TABLE users (
       
       return true;
     } catch (e) {
-      print('Error hearting recipe: $e');
+      _logger.e('Error hearting recipe: $e');
       return false;
     }
   }
@@ -192,7 +193,7 @@ CREATE TABLE users (
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
-        print('User not found for phone number: $userId');
+        _logger.w('User not found for phone number: $userId');
         return false;
       }
       
@@ -204,7 +205,7 @@ CREATE TABLE users (
       
       return true;
     } catch (e) {
-      print('Error unhearting recipe: $e');
+      _logger.e('Error unhearting recipe: $e');
       return false;
     }
   }
@@ -219,7 +220,7 @@ CREATE TABLE users (
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
-        print('User not found for phone number: $userId');
+        _logger.w('User not found for phone number: $userId');
         return [];
       }
       
@@ -230,7 +231,7 @@ CREATE TABLE users (
       
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error getting custom lists: $e');
+      _logger.e('Error getting custom lists: $e');
       return [];
     }
   }
@@ -247,7 +248,7 @@ CREATE TABLE users (
       // Get the user by phone number first
       final user = await getUserByPhone(userId);
       if (user == null) {
-        print('User not found for phone number: $userId');
+        _logger.w('User not found for phone number: $userId');
         throw Exception('User not found');
       }
       
@@ -263,7 +264,7 @@ CREATE TABLE users (
       
       return response;
     } catch (e) {
-      print('Error creating custom list: $e');
+      _logger.e('Error creating custom list: $e');
       rethrow;
     }
   }
@@ -287,7 +288,7 @@ CREATE TABLE users (
       
       return true;
     } catch (e) {
-      print('Error adding recipe to list: $e');
+      _logger.e('Error adding recipe to list: $e');
       return false;
     }
   }
@@ -310,7 +311,7 @@ CREATE TABLE users (
 
       return result != null;
     } catch (e) {
-      print('Error checking hearted state: $e');
+      _logger.e('Error checking hearted state: $e');
       return false;
     }
   }
@@ -328,7 +329,7 @@ CREATE TABLE users (
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      print('Error getting list recipes: $e');
+      _logger.e('Error getting list recipes: $e');
       return [];
     }
   }

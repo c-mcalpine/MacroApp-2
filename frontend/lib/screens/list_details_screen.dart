@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../widgets/common/network_image_widget.dart';
 
 class ListDetailsScreen extends StatelessWidget {
@@ -17,7 +16,7 @@ class ListDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           listName,
-          style: GoogleFonts.lexend(color: Colors.white, fontSize: 24),
+          style: TextStyle(color: Colors.white, fontSize: 24, fontFamily: 'Lexend'),
         ),
         backgroundColor: Colors.black,
       ),
@@ -25,17 +24,17 @@ class ListDetailsScreen extends StatelessWidget {
           ? Center(
               child: Text(
                 "No recipes in this list.",
-                style: GoogleFonts.lexend(color: Colors.white70),
+                style: TextStyle(color: Colors.white70, fontFamily: 'Lexend'),
               ),
             )
           : ListView.builder(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               itemCount: sortedRecipes.length,
               itemBuilder: (context, index) {
                 var recipe = sortedRecipes[index];
                 return Card(
                   color: Colors.white10,
-                  margin: EdgeInsets.symmetric(vertical: 8),
+                                      margin: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -53,9 +52,10 @@ class ListDetailsScreen extends StatelessWidget {
                     ),
                     title: Text(
                       recipe['name'],
-                      style: GoogleFonts.lexend(
+                      style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontFamily: 'Lexend',
                       ),
                     ),
                     trailing: Icon(Icons.arrow_forward, color: Colors.white),

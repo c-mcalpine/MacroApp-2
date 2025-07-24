@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:frontend/services/auth_service.dart';
 import 'package:frontend/screens/username_setup_screen.dart';
 
@@ -9,10 +8,10 @@ class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key, this.onLogout, required this.onAuthenticated}) : super(key: key);
 
   @override
-  _AuthScreenState createState() => _AuthScreenState();
+  AuthScreenState createState() => AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
+class AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
   bool otpSent = false;
@@ -42,9 +41,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 1200));
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
     _scaleAnimation = CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack);
-    _slideAnimation = Tween<Offset>(begin: Offset(0, 0.3), end: Offset.zero).animate(CurvedAnimation(
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOut,
     ));
@@ -138,13 +137,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 // Logo and tagline
                 ScaleTransition(
                   scale: _scaleAnimation,
-                  child: Text(
+                  child: const Text(
                     "macro.",
-                    style: GoogleFonts.lexend(
+                    style: TextStyle(
+                      fontFamily: 'Lexend',
                       fontSize: 48,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
@@ -152,31 +152,32 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
-                SizedBox(height: 12),
+                const SizedBox(height: 12),
                 SlideTransition(
                   position: _slideAnimation,
-                  child: Text(
+                  child: const Text(
                     "Meal prep made personal",
-                    style: GoogleFonts.lexend(
+                    style: TextStyle(
+                      fontFamily: 'Lexend',
                       fontSize: 20,
                       color: Colors.white70,
                       fontWeight: FontWeight.w300,
                     ),
                   ),
                 ),
-                SizedBox(height: 40),
+                const SizedBox(height: 40),
                 
                 // Animation placeholder
                 FadeTransition(
                   opacity: _fadeAnimation,
                   child: Container(
                     height: 200,
-                    margin: EdgeInsets.only(bottom: 40),
+                    margin: const EdgeInsets.only(bottom: 40),
                     child: Center(
                       child: Icon(
                         Icons.restaurant_menu,
                         size: 120,
-                        color: Colors.deepOrange.withOpacity(0.7),
+                        color: Colors.deepOrange.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -199,17 +200,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           child: DropdownButton<String>(
                             value: selectedCountryCode,
                             dropdownColor: Colors.black,
-                            icon: Icon(Icons.arrow_drop_down, color: Colors.white),
-                            style: TextStyle(color: Colors.white),
+                            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                             isExpanded: true,
-                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                             items: countryCodes.map((country) {
                               return DropdownMenuItem<String>(
                                 value: country['code'],
                                 child: Row(
                                   children: [
                                     Text(country['flag']!),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(country['code']!),
                                   ],
                                 ),
@@ -225,17 +226,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           ),
                         ),
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       // Phone number input
                       Expanded(
                         child: TextField(
                           controller: _phoneController,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
                             hintText: "Enter your phone number",
-                            hintStyle: TextStyle(color: Colors.white54),
-                            prefixIcon: Icon(Icons.phone, color: Colors.white70),
+                            hintStyle: const TextStyle(color: Colors.white54),
+                            prefixIcon: const Icon(Icons.phone, color: Colors.white70),
                             filled: true,
                             fillColor: Colors.white12,
                             border: OutlineInputBorder(
@@ -244,11 +245,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.white24),
+                              borderSide: const BorderSide(color: Colors.white24),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: Colors.deepOrange),
+                              borderSide: const BorderSide(color: Colors.deepOrange),
                             ),
                           ),
                         ),
@@ -259,17 +260,17 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 
                 // OTP input (only shown after OTP is sent)
                 if (otpSent) ...[
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: TextField(
                       controller: _otpController,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         hintText: "Enter the OTP",
-                        hintStyle: TextStyle(color: Colors.white54),
-                        prefixIcon: Icon(Icons.lock_outline, color: Colors.white70),
+                        hintStyle: const TextStyle(color: Colors.white54),
+                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.white70),
                         filled: true,
                         fillColor: Colors.white12,
                         border: OutlineInputBorder(
@@ -278,11 +279,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.white24),
+                          borderSide: const BorderSide(color: Colors.white24),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: Colors.deepOrange),
+                          borderSide: const BorderSide(color: Colors.deepOrange),
                         ),
                       ),
                     ),
@@ -291,12 +292,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 
                 // Error message
                 if (errorMessage != null) ...[
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: Text(
                       errorMessage!,
-                      style: GoogleFonts.lexend(
+                      style: const TextStyle(
+                        fontFamily: 'Lexend',
                         color: Colors.redAccent,
                         fontSize: 14,
                       ),
@@ -304,7 +306,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
                 ],
                 
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 
                 // Action button
                 FadeTransition(
@@ -319,11 +321,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 0,
                       ),
                       child: isLoading
-                          ? SizedBox(
+                          ? const SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
@@ -333,7 +335,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             )
                           : Text(
                               otpSent ? "Verify OTP" : "Send OTP",
-                              style: GoogleFonts.lexend(
+                              style: const TextStyle(
+                                fontFamily: 'Lexend',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
@@ -343,15 +346,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
                 ),
                 
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 
                 // Terms and privacy
                 FadeTransition(
                   opacity: _fadeAnimation,
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       "By continuing, you agree to our Terms of Service and Privacy Policy",
-                      style: GoogleFonts.lexend(
+                      style: TextStyle(
+                        fontFamily: 'Lexend',
                         fontSize: 12,
                         color: Colors.white54,
                       ),

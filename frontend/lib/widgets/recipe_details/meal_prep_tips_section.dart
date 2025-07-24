@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class MealPrepTipsSection extends StatelessWidget {
   final List<dynamic> tips;
@@ -11,16 +10,16 @@ class MealPrepTipsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Meal Prep Tips", style: GoogleFonts.lexend(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text("Meal Prep Tips", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Lexend')),
         SizedBox(height: 8),
         Column(
           children: tips.map((tip) {
             return Card(
               color: Colors.white10,
-              margin: EdgeInsets.symmetric(vertical: 8.0),
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -30,9 +29,9 @@ class MealPrepTipsSection extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(tip['storage_type'] ?? "Unknown", style: GoogleFonts.lexend(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          Text(tip['storage_type'] ?? "Unknown", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Lexend')),
                           SizedBox(height: 8),
-                          Text(tip['details'] ?? "", style: GoogleFonts.lexend(fontSize: 16, color: Colors.white70)),
+                          Text(tip['details'] ?? "", style: TextStyle(fontSize: 16, color: Colors.white70, fontFamily: 'Lexend')),
                         ],
                       ),
                     ),

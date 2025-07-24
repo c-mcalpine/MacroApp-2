@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class NutritionFactsSection extends StatelessWidget {
@@ -17,7 +16,7 @@ class NutritionFactsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Nutrition Facts (Per Serving)", style: GoogleFonts.lexend(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text("Nutrition Facts (Per Serving)", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Lexend')),
         SizedBox(height: 8),
         Row(
           children: [
@@ -43,8 +42,8 @@ class NutritionFactsSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Calories per Gram of Protein", style: GoogleFonts.lexend(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                  Text("${(calories / protein).toStringAsFixed(1)} cal/g", style: GoogleFonts.lexend(fontSize: 16, color: Colors.white)),
+                  Text("Calories per Gram of Protein", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Lexend')),
+                  Text("${(calories / protein).toStringAsFixed(1)} cal/g", style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'Lexend')),
                 ],
               ),
             ),
