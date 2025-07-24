@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:provider/provider.dart' as provider;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 import 'config/app_config.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
@@ -14,25 +15,31 @@ import 'services/api_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize app configuration (loads environment variables)
-  final appConfig = AppConfig();
-
-  print('🧪 SUPABASE_URL: ${appConfig.supabaseUrl}');
-  print('🧪 API_BASE_URL: ${appConfig.apiBaseUrl}');
-  print('🧪 SUPABASE_ANON_KEY: ${appConfig.supabaseAnonKey}');
-  await appConfig.initialize();
-  
-  // Initialize Supabase with configuration values
-  await Supabase.initialize(
-    url: appConfig.supabaseUrl,
-    anonKey: appConfig.supabaseAnonKey,
+  final logger = Logger(
+    level: kReleaseMode ? Level.off : Level.info,
   );
-  
-  // Initialize SupabaseService
-  await SupabaseService.initialize();
-  
-  ApiService.init(); // Initialize ApiService
-  
+
+  try {
+    final appConfig = AppConfig();
+    await appConfig.initialize();
+    logger.i('✅ AppConfig initialized');
+
+    await Supabase.initialize(
+      url: appConfig.supabaseUrl,
+      anonKey: appConfig.supabaseAnonKey,
+    );
+    logger.i('✅ Supabase initialized');
+
+    await SupabaseService.initialize();
+    logger.i('✅ SupabaseService initialized');
+
+    ApiService.init();
+    logger.i('✅ ApiService initialized');
+
+  } catch (e, s) {
+    logger.e('❌ Error during app initialization', error: e, stackTrace: s);
+  }
+
   runApp(MyApp());
 }
 
