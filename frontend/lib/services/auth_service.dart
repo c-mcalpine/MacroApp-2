@@ -35,7 +35,6 @@ class AuthService {
       final token = authData['token'];
       if (token == null) return false;
 
-      // TODO: Add token validation if needed
       return true;
     } catch (e) {
       _logger.e('Error checking authentication: $e');

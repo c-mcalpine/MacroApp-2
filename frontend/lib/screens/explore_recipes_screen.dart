@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:frontend/screens/recipe_details_screen.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 import '../widgets/common/network_image_widget.dart';
 
 class ExploreRecipesScreen extends StatefulWidget {
@@ -28,6 +29,7 @@ class ExploreRecipesScreenState extends State<ExploreRecipesScreen> with TickerP
   late AnimationController _controller;
   late Animation<double> _opacityAnimation;
   late Future<List<dynamic>> recipes;
+  static final Logger _logger = Logger();
 
   final List<Map<String, dynamic>> filterOptions = [
     {"label": "🥗 Vegetarian", "key": "Vegetarian", "type": "diet_plan"},
@@ -71,11 +73,11 @@ class ExploreRecipesScreenState extends State<ExploreRecipesScreen> with TickerP
     _opacityAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
     
     if (kDebugMode) {
-      print('Initializing recipes...');
+      _logger.i('Initializing recipes...');
     }
     recipes = ApiService.getRecipes().catchError((error) {
       if (kDebugMode) {
-        print('Error loading recipes: $error');
+        _logger.e('Error loading recipes: $error');
       }
       return [];
     });
@@ -156,8 +158,8 @@ class ExploreRecipesScreenState extends State<ExploreRecipesScreen> with TickerP
           }).toList();
         } catch (e, stack) {
           if (kDebugMode) {
-            print("🔥 Filter error: $e");
-            print("📌 Stack trace: $stack");
+            _logger.e("🔥 Filter error: $e");
+            _logger.e("📌 Stack trace: $stack");
           }
           return [];
         }

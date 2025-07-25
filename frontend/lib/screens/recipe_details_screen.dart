@@ -7,6 +7,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:frontend/screens/chatbot_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 import '../widgets/common/network_image_widget.dart';
 
 class RecipeDetailsScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   int _touchedIndex = -1; // Track the currently touched section
   bool _isHearted = false; // Track if the recipe is hearted
   late AnimationController _animationController;
+  static final Logger _logger = Logger();
 
   Future<void> _checkHeartedState() async {
     final userId = await AuthService.getUserId();
@@ -71,7 +73,7 @@ class RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error toggling heart: $e');
+        _logger.e('Error toggling heart: $e');
       }
       if (mounted) {
         setState(() {
@@ -836,11 +838,11 @@ class RecipeDetailsScreenState extends State<RecipeDetailsScreen>
                       ScaffoldMessenger.of(this.context).showSnackBar(
                         SnackBar(content: Text('Recipe added to ${list['name']}')),
                       );
-                    } catch (e) {
-                      if (kDebugMode) {
-                        print('Error adding recipe to list: $e');
-                      }
-                      if (!mounted) return;
+                                                      } catch (e) {
+                              if (kDebugMode) {
+                                _logger.e('Error adding recipe to list: $e');
+                              }
+                              if (!mounted) return;
                       ScaffoldMessenger.of(this.context).showSnackBar(
                         const SnackBar(content: Text('Failed to add recipe to list')),
                       );
@@ -860,7 +862,7 @@ class RecipeDetailsScreenState extends State<RecipeDetailsScreen>
       );
     } catch (e) {
       if (kDebugMode) {
-        print('Error showing save dialog: $e');
+        _logger.e('Error showing save dialog: $e');
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -872,8 +874,8 @@ class RecipeDetailsScreenState extends State<RecipeDetailsScreen>
   void _showChatbotScreen(BuildContext context, Map<String, dynamic> recipe) {
     final recipeId = recipe['recipe']?['recipe_id'];
     if (kDebugMode) {
-      print("Navigating to ChatbotScreen with recipeId: $recipeId");
-      print("Recipe data: $recipe");
+      _logger.i("Navigating to ChatbotScreen with recipeId: $recipeId");
+      _logger.i("Recipe data: $recipe");
     }
 
     if (recipeId == null || recipeId <= 0) {

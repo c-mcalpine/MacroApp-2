@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
-import '../config/app_config.dart';
+import 'package:logger/logger.dart';
 import 'auth_service.dart';
 
 class ApiService {
@@ -11,14 +11,15 @@ class ApiService {
       const String.fromEnvironment('API_BASE_URL').replaceAll('/api', '');
   static late final Dio _dio;
   static late final http.Client _httpClient;
+  static final Logger _logger = Logger();
 
   static void init() {
     _httpClient = http.Client();
     
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: Duration(seconds: 30),
-      receiveTimeout: Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -29,24 +30,24 @@ class ApiService {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) {
         if (kDebugMode) {
-          print('REQUEST[${options.method}] => PATH: ${options.path}');
-          print('Headers: ${options.headers}');
+          _logger.i('REQUEST[${options.method}] => PATH: ${options.path}');
+          _logger.i('Headers: ${options.headers}');
         }
         return handler.next(options);
       },
       onResponse: (response, handler) {
         if (kDebugMode) {
-          print('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
+          _logger.i('RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}');
         }
         return handler.next(response);
       },
       onError: (DioException e, handler) {
         if (kDebugMode) {
-          print('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
-          print('Error type: ${e.type}');
-          print('Error message: ${e.message}');
+          _logger.e('ERROR[${e.response?.statusCode}] => PATH: ${e.requestOptions.path}');
+          _logger.e('Error type: ${e.type}');
+          _logger.e('Error message: ${e.message}');
           if (e.response != null) {
-            print('Error response: ${e.response?.data}');
+            _logger.e('Error response: ${e.response?.data}');
           }
         }
         return handler.next(e);
@@ -56,9 +57,9 @@ class ApiService {
 
   static void _logEnvVars() {
     if (kDebugMode) {
-      print('ApiService initialization:');
-      print('API_BASE_URL: $baseUrl');
-      print('Is Web: $kIsWeb');
+      _logger.i('ApiService initialization:');
+      _logger.i('API_BASE_URL: $baseUrl');
+      _logger.i('Is Web: $kIsWeb');
     }
   }
 
@@ -72,11 +73,11 @@ class ApiService {
   static Future<List<dynamic>> getRecipes() async {
     try {
       if (kDebugMode) {
-        print('Getting recipes from: $baseUrl/api/recipes');
+        _logger.i('Getting recipes from: $baseUrl/api/recipes');
       }
       final headers = await _getHeaders();
       if (kDebugMode) {
-        print('Request headers: $headers');
+        _logger.i('Request headers: $headers');
       }
 
       if (kIsWeb) {
@@ -87,9 +88,9 @@ class ApiService {
         );
         
         if (kDebugMode) {
-          print('Response status code: ${response.statusCode}');
-          print('Response headers: ${response.headers}');
-          print('Response body: ${response.body}');
+          _logger.i('Response status code: ${response.statusCode}');
+          _logger.i('Response headers: ${response.headers}');
+          _logger.i('Response body: ${response.body}');
         }
         
         if (response.statusCode == 200) {
@@ -100,14 +101,14 @@ class ApiService {
             return data;
           } else {
             if (kDebugMode) {
-              print('Unexpected response format: $data');
+              _logger.e('Unexpected response format: $data');
             }
             throw Exception('Unexpected response format');
           }
         } else {
           if (kDebugMode) {
-            print('Failed to load recipes. Status code: ${response.statusCode}');
-            print('Error response: ${response.body}');
+            _logger.e('Failed to load recipes. Status code: ${response.statusCode}');
+            _logger.e('Error response: ${response.body}');
           }
           throw Exception('Failed to load recipes: ${response.statusCode}');
         }
@@ -122,9 +123,9 @@ class ApiService {
         );
         
         if (kDebugMode) {
-          print('Response status code: ${response.statusCode}');
-          print('Response headers: ${response.headers}');
-          print('Response data: ${response.data}');
+          _logger.i('Response status code: ${response.statusCode}');
+          _logger.i('Response headers: ${response.headers}');
+          _logger.i('Response data: ${response.data}');
         }
         
         if (response.statusCode == 200) {
@@ -135,21 +136,21 @@ class ApiService {
             return data;
           } else {
             if (kDebugMode) {
-              print('Unexpected response format: $data');
+              _logger.e('Unexpected response format: $data');
             }
             throw Exception('Unexpected response format');
           }
         } else {
           if (kDebugMode) {
-            print('Failed to load recipes. Status code: ${response.statusCode}');
-            print('Error response: ${response.data}');
+            _logger.e('Failed to load recipes. Status code: ${response.statusCode}');
+            _logger.e('Error response: ${response.data}');
           }
           throw Exception('Failed to load recipes: ${response.statusCode}');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Exception in getRecipes: $e');
+        _logger.e('Exception in getRecipes: $e');
       }
       rethrow;
     }
@@ -191,7 +192,7 @@ class ApiService {
       final headers = await _getHeaders();
       final token = await AuthService.getToken();
       if (kDebugMode) {
-        print("Sending recipeId: $recipeId with message: $message");
+        _logger.i("Sending recipeId: $recipeId with message: $message");
       }
       
       if (kIsWeb) {
@@ -210,12 +211,12 @@ class ApiService {
           return data["response"];
         } else if (response.statusCode == 404) {
           if (kDebugMode) {
-            print("Error: Recipe not found for recipeId: $recipeId");
+            _logger.e("Error: Recipe not found for recipeId: $recipeId");
           }
           throw Exception('Recipe not found');
         } else {
           if (kDebugMode) {
-            print("Error: ${response.statusCode}, Body: ${response.body}");
+            _logger.e("Error: ${response.statusCode}, Body: ${response.body}");
           }
           throw Exception('AI chat failed');
         }
@@ -237,19 +238,19 @@ class ApiService {
           return response.data["response"];
         } else if (response.statusCode == 404) {
           if (kDebugMode) {
-            print("Error: Recipe not found for recipeId: $recipeId");
+            _logger.e("Error: Recipe not found for recipeId: $recipeId");
           }
           throw Exception('Recipe not found');
         } else {
           if (kDebugMode) {
-            print("Error: ${response.statusCode}, Body: ${response.data}");
+            _logger.e("Error: ${response.statusCode}, Body: ${response.data}");
           }
           throw Exception('AI chat failed');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Exception during chatWithAI: $e");
+        _logger.e("Exception during chatWithAI: $e");
       }
       throw Exception('AI chat failed');
     }
@@ -275,7 +276,7 @@ class ApiService {
           return data["shopping_list_url"];
         } else {
           if (kDebugMode) {
-            print("Error: ${response.statusCode}, Body: ${response.body}");
+            _logger.e("Error: ${response.statusCode}, Body: ${response.body}");
           }
           return null;
         }
@@ -296,14 +297,14 @@ class ApiService {
           return response.data["shopping_list_url"];
         } else {
           if (kDebugMode) {
-            print("Error: ${response.statusCode}, Body: ${response.data}");
+            _logger.e("Error: ${response.statusCode}, Body: ${response.data}");
           }
           return null;
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print("Exception: $e");
+        _logger.e("Exception: $e");
       }
       return null;
     }

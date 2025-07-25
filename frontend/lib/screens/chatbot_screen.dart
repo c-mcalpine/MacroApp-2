@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/services/api_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final Map<String, dynamic> recipe;
@@ -15,6 +16,7 @@ class ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _chatController = TextEditingController();
   final List<Map<String, String>> _messages = []; // Stores chat messages
   bool _isLoading = false; // Track loading state for AI responses
+  static final Logger _logger = Logger();
 
   @override
   Widget build(BuildContext context) {
@@ -120,10 +122,10 @@ class ChatbotScreenState extends State<ChatbotScreen> {
     try {
       // Correctly extract the recipeId
       final recipeId = widget.recipe['recipe']?['recipe_id'];
-      if (kDebugMode) {
-        print("Sending message to AI for recipeId: $recipeId");
-        print("Recipe data in ChatbotScreen: ${widget.recipe}");
-      }
+          if (kDebugMode) {
+      _logger.i("Sending message to AI for recipeId: $recipeId");
+      _logger.i("Recipe data in ChatbotScreen: ${widget.recipe}");
+    }
 
       if (recipeId == null || recipeId <= 0) {
         throw Exception("Invalid recipeId");

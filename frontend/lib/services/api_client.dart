@@ -1,14 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 
 class ApiClient {
-  static final String baseUrl = const String.fromEnvironment('API_BASE_URL');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL');
+  static final Logger _logger = Logger();
 
   static void _logEnvVars() {
     if (kDebugMode) {
-      print('ApiClient initialization:');
-      print('API_BASE_URL: $baseUrl');
+      _logger.i('ApiClient initialization:');
+      _logger.i('API_BASE_URL: $baseUrl');
     }
   }
 
@@ -16,7 +18,7 @@ class ApiClient {
     try {
       _logEnvVars(); // Log when testApi is called
       if (kDebugMode) {
-        print('Testing API connection...');
+        _logger.i('Testing API connection...');
       }
       final response = await http.get(
         Uri.parse('$baseUrl/test'),
@@ -26,14 +28,14 @@ class ApiClient {
       );
 
       if (kDebugMode) {
-        print('Test response status code: ${response.statusCode}');
-        print('Test response body: ${response.body}');
+        _logger.i('Test response status code: ${response.statusCode}');
+        _logger.i('Test response body: ${response.body}');
       }
 
       return jsonDecode(response.body);
     } catch (e) {
       if (kDebugMode) {
-        print('Error testing API: $e');
+        _logger.e('Error testing API: $e');
       }
       rethrow;
     }
@@ -42,13 +44,13 @@ class ApiClient {
   static Future<Map<String, dynamic>> sendOTP(String phoneNumber) async {
     try {
       if (kDebugMode) {
-        print('Sending OTP request to: $baseUrl/auth/send-otp');
-        print('Phone number: $phoneNumber');
+        _logger.i('Sending OTP request to: $baseUrl/auth/send-otp');
+        _logger.i('Phone number: $phoneNumber');
       }
       
       final uri = Uri.parse('$baseUrl/auth/send-otp');
       if (kDebugMode) {
-        print('Full URI: $uri');
+        _logger.i('Full URI: $uri');
       }
       
       final headers = {
@@ -56,12 +58,12 @@ class ApiClient {
         'Accept': 'application/json',
       };
       if (kDebugMode) {
-        print('Request headers: $headers');
+        _logger.i('Request headers: $headers');
       }
       
       final body = jsonEncode({'phone_number': phoneNumber});
       if (kDebugMode) {
-        print('Request body: $body');
+        _logger.i('Request body: $body');
       }
       
       final response = await http.post(
@@ -71,9 +73,9 @@ class ApiClient {
       );
 
       if (kDebugMode) {
-        print('Response status code: ${response.statusCode}');
-        print('Response headers: ${response.headers}');
-        print('Response body: ${response.body}');
+        _logger.i('Response status code: ${response.statusCode}');
+        _logger.i('Response headers: ${response.headers}');
+        _logger.i('Response body: ${response.body}');
       }
 
       if (response.statusCode != 200) {
@@ -84,12 +86,12 @@ class ApiClient {
       return jsonDecode(response.body);
     } catch (e) {
       if (kDebugMode) {
-        print('Error in sendOTP: $e');
+        _logger.e('Error in sendOTP: $e');
         if (e is http.ClientException) {
-          print('Network error details: ${e.message}');
+          _logger.e('Network error details: ${e.message}');
           if (e.message.contains('Failed to fetch')) {
-            print('Possible CORS issue. Check if the API endpoint is accessible and CORS is properly configured.');
-            print('Make sure the API endpoint is accessible at: $baseUrl/auth/send-otp');
+            _logger.e('Possible CORS issue. Check if the API endpoint is accessible and CORS is properly configured.');
+            _logger.e('Make sure the API endpoint is accessible at: $baseUrl/auth/send-otp');
           }
         }
       }
@@ -104,7 +106,7 @@ class ApiClient {
   }) async {
     try {
       if (kDebugMode) {
-        print('Verifying OTP for phone: $phoneNumber');
+        _logger.i('Verifying OTP for phone: $phoneNumber');
       }
       final response = await http.post(
         Uri.parse('$baseUrl/auth/verify-otp'),
@@ -120,8 +122,8 @@ class ApiClient {
       );
 
       if (kDebugMode) {
-        print('Verify OTP response status code: ${response.statusCode}');
-        print('Verify OTP response body: ${response.body}');
+        _logger.i('Verify OTP response status code: ${response.statusCode}');
+        _logger.i('Verify OTP response body: ${response.body}');
       }
 
       if (response.statusCode != 200) {
@@ -144,9 +146,9 @@ class ApiClient {
       return data;
     } catch (e) {
       if (kDebugMode) {
-        print('Error in verifyOTP: $e');
+        _logger.e('Error in verifyOTP: $e');
         if (e is http.ClientException) {
-          print('Network error details: ${e.message}');
+          _logger.e('Network error details: ${e.message}');
         }
       }
       rethrow;

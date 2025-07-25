@@ -5,6 +5,7 @@ import 'package:frontend/screens/explore_recipes_screen.dart';
 import 'package:frontend/screens/search_screen.dart';
 import 'package:frontend/screens/profile_screen.dart';
 import 'package:flutter/foundation.dart';
+import 'package:logger/logger.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -24,6 +25,7 @@ class HomeScreenState extends State<HomeScreen> {
   Map<String, List<Map<String, dynamic>>> customLists = {};
   bool isLoading = true;
   String? userName;
+  static final Logger _logger = Logger();
 
   @override
   void initState() {
@@ -39,7 +41,7 @@ class HomeScreenState extends State<HomeScreen> {
       
       if (userId == null) {
         if (kDebugMode) {
-          print('No user ID found');
+          _logger.w('No user ID found');
         }
         setState(() {
           isLoading = false;
@@ -70,8 +72,8 @@ class HomeScreenState extends State<HomeScreen> {
       });
     } catch (e, stack) {
       if (kDebugMode) {
-        print('Error loading user data: $e');
-        print('Stack trace: $stack');
+        _logger.e('Error loading user data: $e');
+        _logger.e('Stack trace: $stack');
       }
       setState(() {
         isLoading = false;
@@ -107,7 +109,7 @@ class HomeScreenState extends State<HomeScreen> {
       ExploreRecipesScreen(onRecipeSelected: (recipeId) {
         // Handle recipe selection
       }),
-      SearchScreen(),
+      const SearchScreen(),
       ProfileScreen(
         heartedRecipes: heartedRecipes,
         customLists: customLists,
