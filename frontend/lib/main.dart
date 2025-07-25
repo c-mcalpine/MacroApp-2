@@ -40,7 +40,12 @@ void main() async {
     logger.e('❌ Error during app initialization', error: e, stackTrace: s);
   }
 
-  runApp(MyApp(logger: logger));
+  runApp(const MaterialApp(
+  home: Scaffold(
+    backgroundColor: Colors.black,
+    body: Center(child: Text('✅ Barebones works', style: TextStyle(color: Colors.white))),
+  ),
+));
 }
 
 class MyApp extends StatelessWidget {
